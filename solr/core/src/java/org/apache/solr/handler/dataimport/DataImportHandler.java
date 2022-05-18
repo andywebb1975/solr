@@ -35,11 +35,11 @@ import org.apache.solr.common.util.StrUtils;
 import org.apache.solr.core.SolrCore;
 import org.apache.solr.core.SolrResourceLoader;
 import org.apache.solr.handler.RequestHandlerBase;
-import org.apache.solr.metrics.MetricsMap;
-import org.apache.solr.metrics.SolrMetricsContext;
 import org.apache.solr.request.SolrQueryRequest;
 import org.apache.solr.response.RawResponseWriter;
 import org.apache.solr.response.SolrQueryResponse;
+import org.apache.solr.security.AuthorizationContext;
+import org.apache.solr.security.PermissionNameProvider;
 import org.apache.solr.update.processor.UpdateRequestProcessor;
 import org.apache.solr.update.processor.UpdateRequestProcessorChain;
 import org.apache.solr.util.plugin.SolrCoreAware;
@@ -47,6 +47,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.apache.solr.handler.dataimport.DataImporter.IMPORT_CMD;
+import static org.apache.solr.security.PermissionNameProvider.Name.UPDATE_PERM;
 
 /**
  * <p>
@@ -63,11 +64,9 @@ import static org.apache.solr.handler.dataimport.DataImporter.IMPORT_CMD;
  * <p>
  * <b>This API is experimental and subject to change</b>
  *
- * @deprecated since 8.6; see <a href="https://cwiki.apache.org/confluence/display/SOLR/Deprecations">Deprecations</a>
  * @since solr 1.3
  */
-public class DataImportHandler extends RequestHandlerBase implements
-        SolrCoreAware {
+public class DataImportHandler extends RequestHandlerBase implements SolrCoreAware, PermissionNameProvider {
 
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -76,8 +75,6 @@ public class DataImportHandler extends RequestHandlerBase implements
   private boolean debugEnabled = true;
 
   private String myName = "dataimport";
-
-  private MetricsMap metrics;
 
   private static final String PARAM_WRITER_IMPL = "writerImpl";
   private static final String DEFAULT_WRITER_NAME = "SolrWriter";
@@ -278,39 +275,16 @@ public class DataImportHandler extends RequestHandlerBase implements
     }
   }
 
-  @Override
-  public void initializeMetrics(SolrMetricsContext parentContext, String scope) {
-    super.initializeMetrics(parentContext, scope);
-    metrics = new MetricsMap((detailed, map) -> {
-      if (importer != null) {
-        DocBuilder.Statistics cumulative = importer.cumulativeStatistics;
-
-        map.put("Status", importer.getStatus().toString());
-
-        if (importer.docBuilder != null) {
-          DocBuilder.Statistics running = importer.docBuilder.importStatistics;
-          map.put("Documents Processed", running.docCount);
-          map.put("Requests made to DataSource", running.queryCount);
-          map.put("Rows Fetched", running.rowsCount);
-          map.put("Documents Deleted", running.deletedDocCount);
-          map.put("Documents Skipped", running.skipDocCount);
-        }
-
-        map.put(DataImporter.MSG.TOTAL_DOC_PROCESSED, cumulative.docCount);
-        map.put(DataImporter.MSG.TOTAL_QUERIES_EXECUTED, cumulative.queryCount);
-        map.put(DataImporter.MSG.TOTAL_ROWS_EXECUTED, cumulative.rowsCount);
-        map.put(DataImporter.MSG.TOTAL_DOCS_DELETED, cumulative.deletedDocCount);
-        map.put(DataImporter.MSG.TOTAL_DOCS_SKIPPED, cumulative.skipDocCount);
-      }
-    });
-    solrMetricsContext.gauge(this, metrics, true, "importer", getCategory().toString(), scope);
-  }
-
   // //////////////////////SolrInfoMBeans methods //////////////////////
 
   @Override
   public String getDescription() {
     return DataImporter.MSG.JMX_DESC;
+  }
+
+  @Override
+  public PermissionNameProvider.Name getPermissionName(AuthorizationContext ctx) {
+    return UPDATE_PERM;
   }
 
   public static final String ENABLE_DEBUG = "enableDebug";
