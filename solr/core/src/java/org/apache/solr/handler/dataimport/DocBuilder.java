@@ -745,7 +745,7 @@ public class DocBuilder {
     } else {
       try {
         entityProcessor = (EntityProcessor) loadClass(entity.getProcessorName(), dataImporter.getCore())
-                .newInstance();
+                .getDeclaredConstructor().newInstance();
       } catch (Exception e) {
         wrapAndThrow (SEVERE,e,
                 "Unable to load EntityProcessor implementation for entity:" + entity.getName());
