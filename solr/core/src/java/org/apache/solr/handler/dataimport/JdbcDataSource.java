@@ -72,7 +72,8 @@ public class JdbcDataSource extends
   @Override
   public void init(Context context, Properties initProps) {
     resolveVariables(context, initProps);
-    initProps = decryptPwd(context, initProps);
+    // TODO can this be made to work in Solr 9?
+    // initProps = decryptPwd(context, initProps);
     Object o = initProps.get(CONVERT_TYPE);
     if (o != null)
       convertType = Boolean.parseBoolean(o.toString());
@@ -113,33 +114,33 @@ public class JdbcDataSource extends
     }
   }
 
-  private Properties decryptPwd(Context context, Properties initProps) {
-    String encryptionKey = initProps.getProperty("encryptKeyFile");
-    if (initProps.getProperty("password") != null && encryptionKey != null) {
-      // this means the password is encrypted and use the file to decode it
-      try {
-        try (Reader fr = new InputStreamReader(new FileInputStream(encryptionKey), UTF_8)) {
-          char[] chars = new char[100];//max 100 char password
-          int len = fr.read(chars);
-          if (len < 6)
-            throw new DataImportHandlerException(SEVERE, "There should be a password of length 6 atleast " + encryptionKey);
-          Properties props = new Properties();
-          props.putAll(initProps);
-          String password = null;
-          try {
-            password = CryptoKeys.decodeAES(initProps.getProperty("password"), new String(chars, 0, len)).trim();
-          } catch (SolrException se) {
-            throw new DataImportHandlerException(SEVERE, "Error decoding password", se.getCause());
-          }
-          props.put("password", password);
-          initProps = props;
-        }
-      } catch (IOException e) {
-        throw new DataImportHandlerException(SEVERE, "Could not load encryptKeyFile  " + encryptionKey);
-      }
-    }
-    return initProps;
-  }
+  // private Properties decryptPwd(Context context, Properties initProps) {
+  //   String encryptionKey = initProps.getProperty("encryptKeyFile");
+  //   if (initProps.getProperty("password") != null && encryptionKey != null) {
+  //     // this means the password is encrypted and use the file to decode it
+  //     try {
+  //       try (Reader fr = new InputStreamReader(new FileInputStream(encryptionKey), UTF_8)) {
+  //         char[] chars = new char[100];//max 100 char password
+  //         int len = fr.read(chars);
+  //         if (len < 6)
+  //           throw new DataImportHandlerException(SEVERE, "There should be a password of length 6 atleast " + encryptionKey);
+  //         Properties props = new Properties();
+  //         props.putAll(initProps);
+  //         String password = null;
+  //         try {
+  //           password = CryptoKeys.decodeAES(initProps.getProperty("password"), new String(chars, 0, len)).trim();
+  //         } catch (SolrException se) {
+  //           throw new DataImportHandlerException(SEVERE, "Error decoding password", se.getCause());
+  //         }
+  //         props.put("password", password);
+  //         initProps = props;
+  //       }
+  //     } catch (IOException e) {
+  //       throw new DataImportHandlerException(SEVERE, "Could not load encryptKeyFile  " + encryptionKey);
+  //     }
+  //   }
+  //   return initProps;
+  // }
 
   protected Callable<Connection> createConnectionFactory(final Context context,
                                        final Properties initProps) {
@@ -190,7 +191,7 @@ public class JdbcDataSource extends
             // This is a workaround for cases where the user puts the driver jar in the
             // solr.home/lib or solr.home/core/lib directories.
             @SuppressWarnings({"unchecked"})
-            Driver d = (Driver) DocBuilder.loadClass(driver, context.getSolrCore()).newInstance();
+            Driver d = (Driver) DocBuilder.loadClass(driver, context.getSolrCore()).getDeclaredConstructor().newInstance();
             c = d.connect(url, initProps);
           }
         }

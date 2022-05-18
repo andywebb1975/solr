@@ -124,7 +124,7 @@ public abstract class Evaluator {
     @Override
     public String toString() {
       Object o = vr.resolve(varName);
-      return o == null ? null : o.toString();
+      return o == null ? "null" : o.toString();
     }
   }
 
