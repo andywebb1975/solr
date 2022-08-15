@@ -585,6 +585,7 @@ abstract class FacetParser<T extends FacetRequest> {
         facet.missing = getBoolean(m, "missing", facet.missing);
         facet.numBuckets = getBoolean(m, "numBuckets", facet.numBuckets);
         facet.prefix = getString(m, "prefix", facet.prefix);
+        facet.matches = getString(m, "matches", facet.matches);
         facet.allBuckets = getBoolean(m, "allBuckets", facet.allBuckets);
         facet.method = FacetField.FacetMethod.fromString(getString(m, "method", null));
         facet.cacheDf = (int) getLong(m, "cacheDf", facet.cacheDf);

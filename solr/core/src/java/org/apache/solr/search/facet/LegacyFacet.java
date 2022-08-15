@@ -174,6 +174,7 @@ public class LegacyFacet {
             FacetParams.FACET_SORT,
             limit > 0 ? FacetParams.FACET_SORT_COUNT : FacetParams.FACET_SORT_INDEX);
     String prefix = params.getFieldParam(f, FacetParams.FACET_PREFIX);
+    String matches = params.getFieldParam(f, FacetParams.FACET_MATCHES);
 
     Map<String, Object> cmd = new HashMap<>();
     cmd.put("field", facetValue);
@@ -182,6 +183,7 @@ public class LegacyFacet {
     if (mincount != 1) cmd.put("mincount", mincount);
     if (missing) cmd.put("missing", missing);
     if (prefix != null) cmd.put("prefix", prefix);
+    if (matches != null) cmd.put("matches", matches);
     if (sort.equals("count")) {
       // our default
     } else if (sort.equals("index")) {

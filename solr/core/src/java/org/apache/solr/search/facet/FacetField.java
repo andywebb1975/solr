@@ -32,6 +32,7 @@ public class FacetField extends FacetRequestSorted {
   boolean allBuckets;
   boolean numBuckets;
   String prefix;
+  String matches;
   FacetMethod method;
   int cacheDf; // 0 means "default", -1 means "never cache"
 
