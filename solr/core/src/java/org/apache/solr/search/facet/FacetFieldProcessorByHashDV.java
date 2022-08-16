@@ -203,6 +203,11 @@ class FacetFieldProcessorByHashDV extends FacetFieldProcessor {
           SolrException.ErrorCode.BAD_REQUEST,
           getClass() + " doesn't support prefix"); // yet, but it could
     }
+    if (freq.matches != null) {
+      throw new SolrException(
+          SolrException.ErrorCode.BAD_REQUEST,
+          getClass() + " doesn't support matches"); // yet, but it could
+    }
     FieldInfo fieldInfo = fcontext.searcher.getFieldInfos().fieldInfo(sf.getName());
     if (fieldInfo != null
         && fieldInfo.getDocValuesType() != DocValuesType.NUMERIC
