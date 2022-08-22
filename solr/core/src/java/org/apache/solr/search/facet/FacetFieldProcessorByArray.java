@@ -112,6 +112,10 @@ abstract class FacetFieldProcessorByArray extends FacetFieldProcessor {
       prefixRef.copyChars(prefix);
     }
 
+    if (freq.matches != null) {
+      throw new UnsupportedOperationException();
+    }
+
     findStartAndEndOrds();
 
     if (refineResult != null) {
