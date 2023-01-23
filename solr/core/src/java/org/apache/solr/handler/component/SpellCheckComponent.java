@@ -314,6 +314,8 @@ public class SpellCheckComponent extends SearchComponent implements SolrCoreAwar
         NamedList<Object> extendedResult = new SimpleOrderedMap<>();
         extendedResult.add("collationQuery", collation.getCollationQuery());
         extendedResult.add("hits", collation.getHits());
+        // I've seen this in output (see also around line 459)
+        extendedResult.add("maxScore", collation.getMaxScore());
         extendedResult.add("misspellingsAndCorrections", collation.getMisspellingsAndCorrections());
         if (maxCollationTries > 0 && shard) {
           extendedResult.add("collationInternalRank", collation.getInternalRank());
@@ -453,6 +455,8 @@ public class SpellCheckComponent extends SearchComponent implements SolrCoreAwar
           SimpleOrderedMap<Object> extendedResult = new SimpleOrderedMap<>();
           extendedResult.add("collationQuery", collation.getCollationQuery());
           extendedResult.add("hits", collation.getHits());
+          // haven't seen this yet
+          extendedResult.add("maxScore2", collation.getMaxScore());
           extendedResult.add(
               "misspellingsAndCorrections", collation.getMisspellingsAndCorrections());
           collations.add("collation", extendedResult);
@@ -547,6 +551,9 @@ public class SpellCheckComponent extends SearchComponent implements SolrCoreAwar
             SpellCheckCollation coll = new SpellCheckCollation();
             coll.setCollationQuery((String) expandedCollation.get("collationQuery"));
             coll.setHits(((Number) expandedCollation.get("hits")).longValue());
+            // haven't seen this...
+            log.warn("setting maxScore to 23");
+            coll.setMaxScore(23f);
             if (maxCollationTries > 0) {
               coll.setInternalRank((Integer) expandedCollation.get("collationInternalRank"));
             }
@@ -557,6 +564,9 @@ public class SpellCheckComponent extends SearchComponent implements SolrCoreAwar
             SpellCheckCollation priorColl = collations.get(coll.getCollationQuery());
             if (priorColl != null) {
               coll.setHits(coll.getHits() + priorColl.getHits());
+              // haven't seen this...
+              log.warn("setting maxScore to 62");
+              coll.setMaxScore(62f);
               coll.setInternalRank(Math.max(coll.getInternalRank(), priorColl.getInternalRank()));
             }
             collations.put(coll.getCollationQuery(), coll);

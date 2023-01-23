@@ -21,6 +21,7 @@ import org.apache.solr.common.util.NamedList;
 public class SpellCheckCollation implements Comparable<SpellCheckCollation> {
   private NamedList<String> misspellingsAndCorrections;
   private long hits;
+  private float maxScore;
   private int internalRank;
   private String collationQuery;
 
@@ -48,6 +49,10 @@ public class SpellCheckCollation implements Comparable<SpellCheckCollation> {
   public void setHits(long hits) {
     this.hits = hits;
   }
+
+  public float getMaxScore() { return maxScore; }
+
+  public void setMaxScore(float maxScore) { this.maxScore = maxScore; }
 
   public String getCollationQuery() {
     return collationQuery;

@@ -98,6 +98,7 @@ public class SpellCheckCollator {
       PossibilityIterator.RankedSpellPossibility possibility = possibilityIter.next();
       String collationQueryStr = getCollation(originalQuery, possibility.corrections);
       long hits = 0;
+      float maxScore = 0;
 
       if (verifyCandidateWithQuery) {
         tryNo++;
@@ -121,9 +122,9 @@ public class SpellCheckCollator {
         params.remove(CommonParams.START);
         params.set(CommonParams.ROWS, "" + docCollectionLimit);
         // we don't want any stored fields
-        params.set(CommonParams.FL, ID);
+        params.set(CommonParams.FL, ID + ",score");
         // we'll sort by doc id to ensure no scoring is done.
-        params.set(CommonParams.SORT, "_docid_ asc");
+        // params.set(CommonParams.SORT, "_docid_ asc");
         // CursorMark does not like _docid_ sorting, and we don't need it.
         params.remove(CursorMarkParams.CURSOR_MARK_PARAM);
         // If a dismax query, don't add unnecessary clauses for scoring
@@ -157,7 +158,27 @@ public class SpellCheckCollator {
             checkResponse.setFieldFlags(f |= SolrIndexSearcher.TERMINATE_EARLY);
           }
           queryComponent.process(checkResponse);
+
           hits = ((Number) checkResponse.rsp.getToLog().get("hits")).longValue();
+
+          log.warn("checkResponse: {}", checkResponse.toString());
+          log.warn("checkResponse.getResults(): {}", checkResponse.getResults());
+          log.warn("checkResponse.getResults().docList: {}", checkResponse.getResults().docList);
+          // always false :-(
+          log.warn("checkResponse.getResults().docList.hasScores(): {}", checkResponse.getResults().docList.hasScores());
+          log.warn("checkResponse.getResults().docList.maxScore(): {}", checkResponse.getResults().docList.maxScore());
+
+          // gets NaN
+          maxScore = checkResponse.getResults().docList.maxScore();
+
+//          log.warn("checkResponse " + checkResponse.rsp.toString());
+          // this shows just {hits=1}
+//          log.warn("checkResponse1 " + checkResponse.rsp.getToLog().toString());
+          // this appears in the response - without it we throw below
+          // checkResponse.rsp.addToLog("maxScore", 102f);
+          // log.warn("checkResponse2 " + checkResponse.rsp.getToLog().toString());
+//          maxScore = ((Float) checkResponse.rsp.getToLog().get("maxScore")).floatValue();
+
         } catch (EarlyTerminatingCollectorException etce) {
           assert (docCollectionLimit > 0);
           assert 0 < etce.getNumberScanned();
@@ -184,6 +205,7 @@ public class SpellCheckCollator {
         SpellCheckCollation collation = new SpellCheckCollation();
         collation.setCollationQuery(collationQueryStr);
         collation.setHits(hits);
+        collation.setMaxScore(maxScore);
         collation.setInternalRank(
             suggestionsMayOverlap
                 ? ((possibility.rank * 1000) + possibility.index)

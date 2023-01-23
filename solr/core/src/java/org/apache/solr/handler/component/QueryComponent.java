@@ -1074,7 +1074,16 @@ public class QueryComponent extends SearchComponent {
     rb.rsp.addToLog("hits", numFound);
 
     SolrDocumentList responseDocs = new SolrDocumentList();
-    if (maxScore != null) responseDocs.setMaxScore(maxScore);
+    if (maxScore != null) {
+      // haven't seen this...
+      log.warn("non-null maxScore: {}", maxScore);
+      responseDocs.setMaxScore(maxScore);
+      rb.rsp.addToLog("maxScore", maxScore);
+    } else {
+      // or this...
+      log.warn("null maxScore");
+      rb.rsp.addToLog("maxScore", 42f);
+    }
     responseDocs.setNumFound(numFound);
     responseDocs.setNumFoundExact(hitCountIsExact);
     responseDocs.setStart(ss.getOffset());
