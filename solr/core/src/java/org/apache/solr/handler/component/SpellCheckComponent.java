@@ -290,6 +290,8 @@ public class SpellCheckComponent extends SearchComponent implements SolrCoreAwar
     int maxCollationEvaluations = params.getInt(SPELLCHECK_MAX_COLLATION_EVALUATIONS, 10000);
     boolean collationExtendedResults = params.getBool(SPELLCHECK_COLLATE_EXTENDED_RESULTS, false);
     int maxCollationCollectDocs = params.getInt(SPELLCHECK_COLLATE_MAX_COLLECT_DOCS, 0);
+    boolean collationGetMaxScore = params.getBool(SPELLCHECK_COLLATE_GET_MAXSCORE, false);
+    String collationSortMaxScore = params.get(SPELLCHECK_COLLATE_SORT_MAXSCORE);
     // If not reporting hits counts, don't bother collecting more than 1 document per try.
     if (!collationExtendedResults) {
       maxCollationCollectDocs = 1;
@@ -301,7 +303,9 @@ public class SpellCheckComponent extends SearchComponent implements SolrCoreAwar
             .setMaxCollationTries(maxCollationTries)
             .setMaxCollationEvaluations(maxCollationEvaluations)
             .setSuggestionsMayOverlap(suggestionsMayOverlap)
-            .setDocCollectionLimit(maxCollationCollectDocs);
+            .setDocCollectionLimit(maxCollationCollectDocs)
+            .setGetMaxScore(collationGetMaxScore)
+            .setSortMaxScore(collationSortMaxScore);
     List<SpellCheckCollation> collations = collator.collate(spellingResult, q, rb);
     // by sorting here we guarantee a non-distributed request returns all
     // results in the same order as a distributed request would,
@@ -314,8 +318,9 @@ public class SpellCheckComponent extends SearchComponent implements SolrCoreAwar
         NamedList<Object> extendedResult = new SimpleOrderedMap<>();
         extendedResult.add("collationQuery", collation.getCollationQuery());
         extendedResult.add("hits", collation.getHits());
+        if (collationGetMaxScore) extendedResult.add("collationMaxScore", collation.getMaxScore());
         extendedResult.add("misspellingsAndCorrections", collation.getMisspellingsAndCorrections());
-        if (maxCollationTries > 0 && shard) {
+        if ((maxCollationTries > 0 && shard) || collationGetMaxScore) {
           extendedResult.add("collationInternalRank", collation.getInternalRank());
         }
         collationList.add("collation", extendedResult);
@@ -391,6 +396,7 @@ public class SpellCheckComponent extends SearchComponent implements SolrCoreAwar
     Integer maxResultsForSuggest = maxResultsForSuggest(rb);
     int count = rb.req.getParams().getInt(SPELLCHECK_COUNT, 1);
     int numSug = Math.max(count, AbstractLuceneSpellChecker.DEFAULT_SUGGESTION_COUNT);
+    boolean collationGetMaxScore = params.getBool(SPELLCHECK_COLLATE_GET_MAXSCORE, false);
 
     String origQuery = params.get(SPELLCHECK_Q);
     if (origQuery == null) {
@@ -453,6 +459,10 @@ public class SpellCheckComponent extends SearchComponent implements SolrCoreAwar
           SimpleOrderedMap<Object> extendedResult = new SimpleOrderedMap<>();
           extendedResult.add("collationQuery", collation.getCollationQuery());
           extendedResult.add("hits", collation.getHits());
+          if (collationGetMaxScore) {
+            extendedResult.add("collationMaxScore", collation.getMaxScore());
+            extendedResult.add("collationInternalRank", collation.getInternalRank());
+          }
           extendedResult.add(
               "misspellingsAndCorrections", collation.getMisspellingsAndCorrections());
           collations.add("collation", extendedResult);
