@@ -166,4 +166,21 @@ public interface SpellingParams {
       SPELLCHECK_PREFIX + "collateParam.";
   /** Certain spelling implementations may allow for an accuracy setting. */
   public static final String SPELLCHECK_ACCURACY = SPELLCHECK_PREFIX + "accuracy";
+
+  /**
+   * Determine and present the maxScore for each collation
+   */
+  public static final String SPELLCHECK_COLLATE_GET_MAXSCORE =
+      SPELLCHECK_PREFIX + "collateGetMaxScore";
+
+  /**
+   * Option to sort collations by maxScore ahead of internalRank. This is intended for use with
+   * fields using the BooleanSimilarity and per-item boosts rather than with BM25 or other
+   * similarities. It may be set to "desc" (for BooleanSimilarity + boost where preferred items
+   * are boosted) or "asc" (for BM25, so more common terms win).
+   *
+   * {@link SpellingParams#SPELLCHECK_COLLATE_GET_MAXSCORE} must be enabled too.
+   */
+  public static final String SPELLCHECK_COLLATE_SORT_MAXSCORE =
+          SPELLCHECK_PREFIX + "collateSortMaxScore";
 }
