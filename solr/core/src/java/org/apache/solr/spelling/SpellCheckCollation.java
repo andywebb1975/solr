@@ -21,11 +21,21 @@ import org.apache.solr.common.util.NamedList;
 public class SpellCheckCollation implements Comparable<SpellCheckCollation> {
   private NamedList<String> misspellingsAndCorrections;
   private long hits;
+  private float maxScore;
+  private String sortMaxScore;
   private int internalRank;
   private String collationQuery;
 
   @Override
   public int compareTo(SpellCheckCollation scc) {
+    if ("desc".equals(sortMaxScore)) {
+      int s = Float.compare(scc.maxScore, maxScore);
+      if (s != 0) return s;
+    }
+    if ("asc".equals(sortMaxScore)) {
+      int s = Float.compare(maxScore, scc.maxScore);
+      if (s != 0) return s;
+    }
     int c = Integer.compare(internalRank, scc.internalRank);
     if (c == 0) {
       return collationQuery.compareTo(scc.collationQuery);
@@ -49,6 +59,10 @@ public class SpellCheckCollation implements Comparable<SpellCheckCollation> {
     this.hits = hits;
   }
 
+  public float getMaxScore() { return maxScore; }
+
+  public void setMaxScore(float maxScore) { this.maxScore = maxScore; }
+
   public String getCollationQuery() {
     return collationQuery;
   }
@@ -63,5 +77,9 @@ public class SpellCheckCollation implements Comparable<SpellCheckCollation> {
 
   public void setInternalRank(int internalRank) {
     this.internalRank = internalRank;
+  }
+
+  public void setSortMaxScore(String sortMaxScore) {
+    this.sortMaxScore = sortMaxScore;
   }
 }
