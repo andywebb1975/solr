@@ -121,11 +121,10 @@ public class SpellCheckCollator {
         params.set(CommonParams.Q, collationQueryStr);
         params.remove(CommonParams.START);
         params.set(CommonParams.ROWS, "" + docCollectionLimit);
-        // we don't want any stored fields
-        params.set(CommonParams.FL, ID + ",score");
-        // we'll sort by doc id to ensure no scoring is done.
-        // params.set(CommonParams.SORT, "_docid_ asc");
-        // CursorMark does not like _docid_ sorting, and we don't need it.
+        // we don't need any stored fields, but scores can be useful
+        params.set(CommonParams.FL, "id,score");
+        params.set(CommonParams.SORT, "score desc");
+        // no need for CursorMark support
         params.remove(CursorMarkParams.CURSOR_MARK_PARAM);
         // If a dismax query, don't add unnecessary clauses for scoring
         params.remove(DisMaxParams.TIE);
@@ -134,6 +133,7 @@ public class SpellCheckCollator {
         params.remove(DisMaxParams.PF3);
         params.remove(DisMaxParams.BQ);
         params.remove(DisMaxParams.BF);
+
         // Collate testing does not support Grouping (see SOLR-2577)
         params.remove(GroupParams.GROUP);
 
@@ -161,23 +161,7 @@ public class SpellCheckCollator {
 
           hits = ((Number) checkResponse.rsp.getToLog().get("hits")).longValue();
 
-          log.warn("checkResponse: {}", checkResponse.toString());
-          log.warn("checkResponse.getResults(): {}", checkResponse.getResults());
-          log.warn("checkResponse.getResults().docList: {}", checkResponse.getResults().docList);
-          // always false :-(
-          log.warn("checkResponse.getResults().docList.hasScores(): {}", checkResponse.getResults().docList.hasScores());
-          log.warn("checkResponse.getResults().docList.maxScore(): {}", checkResponse.getResults().docList.maxScore());
-
-          // gets NaN
           maxScore = checkResponse.getResults().docList.maxScore();
-
-//          log.warn("checkResponse " + checkResponse.rsp.toString());
-          // this shows just {hits=1}
-//          log.warn("checkResponse1 " + checkResponse.rsp.getToLog().toString());
-          // this appears in the response - without it we throw below
-          // checkResponse.rsp.addToLog("maxScore", 102f);
-          // log.warn("checkResponse2 " + checkResponse.rsp.getToLog().toString());
-//          maxScore = ((Float) checkResponse.rsp.getToLog().get("maxScore")).floatValue();
 
         } catch (EarlyTerminatingCollectorException etce) {
           assert (docCollectionLimit > 0);
