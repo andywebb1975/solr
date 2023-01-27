@@ -49,6 +49,8 @@ public class SpellCheckCollator {
   private int maxCollationEvaluations = 10000;
   private boolean suggestionsMayOverlap = false;
   private int docCollectionLimit = 0;
+  private boolean getMaxScore = false;
+  private String sortMaxScore;
 
   public List<SpellCheckCollation> collate(
       SpellingResult result, String originalQuery, ResponseBuilder ultimateResponse) {
@@ -98,6 +100,7 @@ public class SpellCheckCollator {
       PossibilityIterator.RankedSpellPossibility possibility = possibilityIter.next();
       String collationQueryStr = getCollation(originalQuery, possibility.corrections);
       long hits = 0;
+      float maxScore = 0;
 
       if (verifyCandidateWithQuery) {
         tryNo++;
@@ -120,13 +123,22 @@ public class SpellCheckCollator {
         params.set(CommonParams.Q, collationQueryStr);
         params.remove(CommonParams.START);
         params.set(CommonParams.ROWS, "" + docCollectionLimit);
-        // we don't want any stored fields
-        params.set(CommonParams.FL, ID);
-        // we'll sort by doc id to ensure no scoring is done.
-        params.set(CommonParams.SORT, "_docid_ asc");
+        if (getMaxScore) {
+          // we don't need any stored fields, but score is needed for maxScore to show up
+          params.set(CommonParams.FL, ID + ",score");
+          params.set(CommonParams.SORT, "score desc");
+          // TODO write tests for this path
+        } else {
+          // we don't want any stored fields
+          params.set(CommonParams.FL, ID);
+          // we'll sort by doc id to ensure no scoring is done.
+          params.set(CommonParams.SORT, "_docid_ asc");
+        }
         // CursorMark does not like _docid_ sorting, and we don't need it.
         params.remove(CursorMarkParams.CURSOR_MARK_PARAM);
         // If a dismax query, don't add unnecessary clauses for scoring
+        // NB edismax boost isn't removed - presumably this code predates that.
+        // This means it can still be used to influence the maxScore, which is helpful.
         params.remove(DisMaxParams.TIE);
         params.remove(DisMaxParams.PF);
         params.remove(DisMaxParams.PF2);
@@ -158,6 +170,7 @@ public class SpellCheckCollator {
           }
           queryComponent.process(checkResponse);
           hits = ((Number) checkResponse.rsp.getToLog().get("hits")).longValue();
+          if (getMaxScore) maxScore = checkResponse.getResults().docList.maxScore();
         } catch (EarlyTerminatingCollectorException etce) {
           assert (docCollectionLimit > 0);
           assert 0 < etce.getNumberScanned();
@@ -184,6 +197,10 @@ public class SpellCheckCollator {
         SpellCheckCollation collation = new SpellCheckCollation();
         collation.setCollationQuery(collationQueryStr);
         collation.setHits(hits);
+        if (getMaxScore) {
+          collation.setMaxScore(maxScore);
+          collation.setSortMaxScore(sortMaxScore);
+        }
         collation.setInternalRank(
             suggestionsMayOverlap
                 ? ((possibility.rank * 1000) + possibility.index)
@@ -283,6 +300,16 @@ public class SpellCheckCollator {
 
   public SpellCheckCollator setDocCollectionLimit(int docCollectionLimit) {
     this.docCollectionLimit = docCollectionLimit;
+    return this;
+  }
+
+  public SpellCheckCollator setGetMaxScore(boolean getMaxScore) {
+    this.getMaxScore = getMaxScore;
+    return this;
+  }
+
+  public SpellCheckCollator setSortMaxScore(String sortMaxScore) {
+    this.sortMaxScore = sortMaxScore;
     return this;
   }
 }
