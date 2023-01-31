@@ -125,7 +125,7 @@ public class SpellCheckCollator {
         params.set(CommonParams.ROWS, "" + docCollectionLimit);
         if (getMaxScore) {
           // we don't need any stored fields, but score is needed for maxScore to show up
-          params.set(CommonParams.FL, ID + ",score");
+          params.set(CommonParams.FL, ID + ",score" + ",uri,title"); // TODO parameterise
           params.set(CommonParams.SORT, "score desc");
           // TODO write tests for this path
         } else {
@@ -171,6 +171,7 @@ public class SpellCheckCollator {
           queryComponent.process(checkResponse);
           hits = ((Number) checkResponse.rsp.getToLog().get("hits")).longValue();
           if (getMaxScore) maxScore = checkResponse.getResults().docList.maxScore();
+          log.warn(checkResponse.getResults().docList.toString());
         } catch (EarlyTerminatingCollectorException etce) {
           assert (docCollectionLimit > 0);
           assert 0 < etce.getNumberScanned();
