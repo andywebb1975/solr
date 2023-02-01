@@ -37,6 +37,7 @@ import org.apache.solr.handler.component.ResponseBuilder;
 import org.apache.solr.handler.component.SearchComponent;
 import org.apache.solr.request.LocalSolrQueryRequest;
 import org.apache.solr.response.SolrQueryResponse;
+import org.apache.solr.search.DocIterator;
 import org.apache.solr.search.EarlyTerminatingCollectorException;
 import org.apache.solr.search.SolrIndexSearcher;
 import org.slf4j.Logger;
@@ -171,7 +172,18 @@ public class SpellCheckCollator {
           queryComponent.process(checkResponse);
           hits = ((Number) checkResponse.rsp.getToLog().get("hits")).longValue();
           if (getMaxScore) maxScore = checkResponse.getResults().docList.maxScore();
-          log.warn(checkResponse.getResults().docList.toString());
+          if (hits>0) {
+            DocIterator iterator = checkResponse.getResults().docList.iterator();
+            if (iterator.hasNext()) {
+              int id = iterator.nextDoc();
+              log.warn("collation found doc id {}", id);
+              // how can we get the uri etc?
+            } else {
+              log.error("collation iterator has nothing - try setting spellcheck.collateMaxCollectDocs");
+            }
+          } else {
+            log.warn("collation found nothing");
+          }
         } catch (EarlyTerminatingCollectorException etce) {
           assert (docCollectionLimit > 0);
           assert 0 < etce.getNumberScanned();
