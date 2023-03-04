@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
 import org.apache.solr.common.params.CommonParams;
 import org.apache.solr.common.params.CursorMarkParams;
@@ -37,6 +38,8 @@ import org.apache.solr.handler.component.ResponseBuilder;
 import org.apache.solr.handler.component.SearchComponent;
 import org.apache.solr.request.LocalSolrQueryRequest;
 import org.apache.solr.response.SolrQueryResponse;
+import org.apache.solr.schema.IndexSchema;
+import org.apache.solr.schema.SchemaField;
 import org.apache.solr.search.DocIterator;
 import org.apache.solr.search.EarlyTerminatingCollectorException;
 import org.apache.solr.search.SolrIndexSearcher;
@@ -167,6 +170,7 @@ public class SpellCheckCollator {
           log.warn("trying collation query for {}", collationQueryStr);
           queryComponent.prepare(checkResponse);
           if (docCollectionLimit > 0) {
+            // don't use this if you want to inspect the collation results - EarlyTerminatingCollectorException can fire which prevents us seeing them
             int f = checkResponse.getFieldFlags();
             checkResponse.setFieldFlags(f |= SolrIndexSearcher.TERMINATE_EARLY);
           }
@@ -175,6 +179,30 @@ public class SpellCheckCollator {
           if (getMaxScore) maxScore = checkResponse.getResults().docList.maxScore();
           
           log.warn("got collation results for {}, hits = {}", collationQueryStr, hits);
+
+          // NB we won't get here if EarlyTerminatingCollectorException thrown
+          if (hits>0) {
+            DocIterator iterator = checkResponse.getResults().docList.iterator();
+            if (iterator.hasNext()) {
+              int docId = iterator.nextDoc();
+              log.warn("collation query for {} found doc id {}, hits={}", collationQueryStr, docId, hits);
+              // how can we get the uri etc?
+              // http://localhost:8983/solr/childrens-2/select?defType=edismax&qf=fulltitle_icu&q=topp%20geer&rows=1&spellcheck=true&spellcheck.collate=true&spellcheck.count=5&spellcheck.maxCollations=5&spellcheck.maxCollationTries=5&spellcheck.collateGetMaxScore=true&spellcheck.collateExtendedResults=true&spellcheck.collateMaxCollectDocs=1
+              final Document document = checkResponse.req.getSearcher().doc(docId);
+
+              IndexSchema schema = checkResponse.req.getSchema();
+              final String uniqueVal = schema.printableUniqueKey(document);
+              log.warn("got unique key {}", uniqueVal);
+
+              SchemaField titleField = schema.getFieldOrNull("fulltitle");
+              log.warn("fulltitle field is {}", titleField); // field definition, not its value!
+
+            } else {
+              log.error("collation query iterator has nothing - try setting spellcheck.collateMaxCollectDocs, hits={}", hits);
+            }
+          } else {
+            log.warn("collation query found nothing");
+          }
 
         } catch (EarlyTerminatingCollectorException etce) {
           assert (docCollectionLimit > 0);
@@ -195,30 +223,6 @@ public class SpellCheckCollator {
               "Exception trying to re-query to check if a spell check possibility would return any hits.",
               e);
         } finally {
-
-          // this fails after an EarlyTerminatingCollectorException
-          try {
-            if (hits>0) {
-              DocIterator iterator = checkResponse.getResults().docList.iterator();
-              if (iterator.hasNext()) {
-                int id = iterator.nextDoc();
-                log.warn("collation query for {} found doc id {}, hits={}", collationQueryStr, id, hits);
-                // how can we get the uri etc?
-                // also, EarlyTerminatingCollectorException short-cuts this code a lot! ref SolrIndexSearcher.TERMINATE_EARLY - what does that do?
-                // http://localhost:8983/solr/childrens-2/select?defType=edismax&qf=fulltitle_icu&q=topp%20geer&rows=1&spellcheck=true&spellcheck.collate=true&spellcheck.count=5&spellcheck.maxCollations=5&spellcheck.maxCollationTries=5&spellcheck.collateGetMaxScore=true&spellcheck.collateExtendedResults=true&spellcheck.collateMaxCollectDocs=1
-    
-              } else {
-                log.error("collation query iterator has nothing - try setting spellcheck.collateMaxCollectDocs, hits={}", hits);
-              }
-            } else {
-              log.warn("collation query found nothing");
-            }
-          } catch(Exception e) {
-            log.warn(
-              "Exception trying to get collation results.",
-              e);
-          }
-
           checkResponse.req.close();
         }
       }
