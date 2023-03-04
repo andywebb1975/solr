@@ -126,7 +126,7 @@ public class SpellCheckCollator {
         params.set(CommonParams.ROWS, "" + docCollectionLimit);
         if (getMaxScore) {
           // we don't need any stored fields, but score is needed for maxScore to show up
-          params.set(CommonParams.FL, ID + ",score" + ",uri,title"); // TODO parameterise
+          params.set(CommonParams.FL, ID + ",score" + ",uri,title"); // TODO parameterise! But the doc fields aren't fetched.
           params.set(CommonParams.SORT, "score desc");
           // TODO write tests for this path
         } else {
@@ -164,6 +164,7 @@ public class SpellCheckCollator {
         checkResponse.components = Arrays.asList(queryComponent);
 
         try {
+          log.warn("trying collation query for {}", collationQueryStr);
           queryComponent.prepare(checkResponse);
           if (docCollectionLimit > 0) {
             int f = checkResponse.getFieldFlags();
@@ -172,18 +173,9 @@ public class SpellCheckCollator {
           queryComponent.process(checkResponse);
           hits = ((Number) checkResponse.rsp.getToLog().get("hits")).longValue();
           if (getMaxScore) maxScore = checkResponse.getResults().docList.maxScore();
-          if (hits>0) {
-            DocIterator iterator = checkResponse.getResults().docList.iterator();
-            if (iterator.hasNext()) {
-              int id = iterator.nextDoc();
-              log.warn("collation found doc id {}", id);
-              // how can we get the uri etc?
-            } else {
-              log.error("collation iterator has nothing - try setting spellcheck.collateMaxCollectDocs");
-            }
-          } else {
-            log.warn("collation found nothing");
-          }
+          
+          log.warn("got collation results for {}, hits = {}", collationQueryStr, hits);
+
         } catch (EarlyTerminatingCollectorException etce) {
           assert (docCollectionLimit > 0);
           assert 0 < etce.getNumberScanned();
@@ -197,11 +189,36 @@ public class SpellCheckCollator {
                     (((float) (maxDocId * etce.getNumberCollected()))
                         / (float) etce.getNumberScanned());
           }
+          log.warn("EarlyTerminatingCollectorException for {}, hits = {}", collationQueryStr, hits);
         } catch (Exception e) {
           log.warn(
               "Exception trying to re-query to check if a spell check possibility would return any hits.",
               e);
         } finally {
+
+          // this fails after an EarlyTerminatingCollectorException
+          try {
+            if (hits>0) {
+              DocIterator iterator = checkResponse.getResults().docList.iterator();
+              if (iterator.hasNext()) {
+                int id = iterator.nextDoc();
+                log.warn("collation query for {} found doc id {}, hits={}", collationQueryStr, id, hits);
+                // how can we get the uri etc?
+                // also, EarlyTerminatingCollectorException short-cuts this code a lot! ref SolrIndexSearcher.TERMINATE_EARLY - what does that do?
+                // http://localhost:8983/solr/childrens-2/select?defType=edismax&qf=fulltitle_icu&q=topp%20geer&rows=1&spellcheck=true&spellcheck.collate=true&spellcheck.count=5&spellcheck.maxCollations=5&spellcheck.maxCollationTries=5&spellcheck.collateGetMaxScore=true&spellcheck.collateExtendedResults=true&spellcheck.collateMaxCollectDocs=1
+    
+              } else {
+                log.error("collation query iterator has nothing - try setting spellcheck.collateMaxCollectDocs, hits={}", hits);
+              }
+            } else {
+              log.warn("collation query found nothing");
+            }
+          } catch(Exception e) {
+            log.warn(
+              "Exception trying to get collation results.",
+              e);
+          }
+
           checkResponse.req.close();
         }
       }
