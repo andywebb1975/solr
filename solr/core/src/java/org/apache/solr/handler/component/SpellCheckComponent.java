@@ -677,8 +677,10 @@ public class SpellCheckComponent extends SearchComponent implements SolrCoreAwar
           suggestionList.add("suggestion", sugs);
           for (Map.Entry<String, Integer> suggEntry : theSuggestions.entrySet()) {
             SimpleOrderedMap<Object> sugEntry = new SimpleOrderedMap<>();
-            sugEntry.add("word", suggEntry.getKey());
+            String suggestion = suggEntry.getKey();
+            sugEntry.add("word", suggestion);
             sugEntry.add("freq", suggEntry.getValue());
+            sugEntry.add("score", spellingResult.getSuggestionScore(suggestion));
             sugs.add(sugEntry);
           }
         } else {

@@ -204,6 +204,11 @@ public class DirectSolrSpellChecker extends SolrSpellChecker {
               : options.count;
       SuggestWord[] suggestions =
           checker.suggestSimilar(term, count, options.reader, options.suggestMode, accuracy);
+
+      for (SuggestWord suggestion : suggestions) {
+        log.debug("suggestion: {} {} {}", suggestion.string, suggestion.freq, suggestion.score);
+      }
+
       result.addFrequency(token, freq);
 
       // If considering alternatives to "correctly-spelled" terms, then add the
@@ -231,7 +236,7 @@ public class DirectSolrSpellChecker extends SolrSpellChecker {
         result.add(token, empty);
       } else {
         for (SuggestWord suggestion : suggestions) {
-          result.add(token, suggestion.string, suggestion.freq);
+          result.add(token, suggestion.string, suggestion.freq, suggestion.score);
         }
       }
     }

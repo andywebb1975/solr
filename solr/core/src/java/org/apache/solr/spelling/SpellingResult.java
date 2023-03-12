@@ -16,10 +16,13 @@
  */
 package org.apache.solr.spelling;
 
+import java.lang.invoke.MethodHandles;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Implementations of SolrSpellChecker must return suggestions as SpellResult instance. This is
@@ -28,6 +31,8 @@ import java.util.Map;
  * @since solr 1.3
  */
 public class SpellingResult {
+  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
   private Collection<Token> tokens;
 
   /**
@@ -38,6 +43,8 @@ public class SpellingResult {
 
   private Map<Token, Integer> tokenFrequency;
   public static final int NO_FREQUENCY_INFO = -1;
+
+  private Map<String, Float> suggestionScore;
 
   public SpellingResult() {}
 
@@ -93,6 +100,30 @@ public class SpellingResult {
   }
 
   /**
+   * Suggestions must be added with the best suggestion first. ORDER is important.
+   *
+   * @param token The {@link Token}
+   * @param suggestion The suggestion for the Token
+   * @param docFreq The document frequency
+   * @param score The score for the suggestion (for debug purposes - this is what's compared with accuracy)
+   */
+  public void add(Token token, String suggestion, int docFreq, float score) {
+    log.debug("suggestion: {} {} {}", suggestion, docFreq, score);
+
+    LinkedHashMap<String, Integer> map = this.suggestions.get(token);
+    // Don't bother adding if we already have this token
+    if (map == null) {
+      map = new LinkedHashMap<>();
+      this.suggestions.put(token, map);
+    }
+    map.put(suggestion, docFreq);
+    if (suggestionScore == null) {
+      suggestionScore = new LinkedHashMap<>();
+    }
+    suggestionScore.put(suggestion, score);
+  }
+
+  /**
    * Gets the suggestions for the given token.
    *
    * @param token The {@link Token} to look up
@@ -117,6 +148,10 @@ public class SpellingResult {
 
   public boolean hasTokenFrequencyInfo() {
     return tokenFrequency != null && !tokenFrequency.isEmpty();
+  }
+
+  public Float getSuggestionScore(String suggestion) {
+    return suggestionScore.get(suggestion);
   }
 
   /**
