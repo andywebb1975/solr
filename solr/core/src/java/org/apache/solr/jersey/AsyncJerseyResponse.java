@@ -14,14 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.solr.client.solrj.request.beans;
 
-import org.apache.solr.common.annotation.JsonProperty;
-import org.apache.solr.common.util.ReflectMapWriter;
+package org.apache.solr.jersey;
 
-public class SetCollectionPropertyPayload implements ReflectMapWriter {
-  @JsonProperty(required = true)
-  public String name;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-  @JsonProperty public String value = null;
+public class AsyncJerseyResponse extends SolrJerseyResponse {
+  @JsonProperty("requestid")
+  public String requestId;
 }
