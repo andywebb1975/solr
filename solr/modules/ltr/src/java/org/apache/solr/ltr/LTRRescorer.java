@@ -54,14 +54,18 @@ public class LTRRescorer extends Rescorer {
 
   protected static final Comparator<ScoreDoc> scoreComparator =
       (a, b) -> {
-        // Sort by score descending, then docID ascending:
+        // Sort by score descending, original index, then docID ascending:
         if (a.score > b.score) {
           return -1;
         } else if (a.score < b.score) {
           return 1;
+        } else if (a.index > b.index) {
+          return 1;
+        } else if (a.index < b.index) {
+          return -1;
         } else {
-          // This subtraction can't overflow int
-          // because docIDs are >= 0:
+          // This subtraction can't overflow int because docIDs are >= 0.
+          // This code may be redundant given the use of index above.
           return a.doc - b.doc;
         }
       };
@@ -144,6 +148,12 @@ public class LTRRescorer extends Rescorer {
 
   protected static ScoreDoc[] getFirstPassDocsRanked(TopDocs firstPassTopDocs) {
     final ScoreDoc[] hits = firstPassTopDocs.scoreDocs;
+
+    // record original index of each hit
+    for(int i=0; i<hits.length; i++) {
+      hits[i].index=i;
+    }
+
     Arrays.sort(hits, docComparator);
 
     assert firstPassTopDocs.totalHits.relation == TotalHits.Relation.EQUAL_TO;
