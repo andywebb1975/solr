@@ -3,6 +3,7 @@
 /gradle.properties
 .gradle/
 build/
+**/bin/
 
 # IntelliJ IDEA
 /.idea/
@@ -21,6 +22,9 @@ out/
 /.metadata
 #    Eclipse Gradle oddity
 **/bin/default/
+
+# Visual Studio Code
+.vscode/
 
 .editorconfig
 
