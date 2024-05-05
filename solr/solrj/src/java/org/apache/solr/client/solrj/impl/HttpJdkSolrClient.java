@@ -299,10 +299,15 @@ public class HttpJdkSolrClient extends HttpSolrClientBase {
       InputStream is = streams.iterator().next().getStream();
       bodyPublisher = HttpRequest.BodyPublishers.ofInputStream(() -> is);
     } else if (queryParams != null && urlParamNames != null) {
+      // rP is a new name for the incoming qP
       ModifiableSolrParams requestParams = queryParams;
+      // qP becomes a new object, with selected params moved from original set - when would urlParamNames be specified?
       queryParams = calculateQueryParams(urlParamNames, requestParams);
+      // qP gains further (?) params moved from original set if solrRequest has params, but only if urlParamNames was set too
       queryParams.add(calculateQueryParams(solrRequest.getQueryParams(), requestParams));
+      // bP receives any remaining params from original set
       bodyPublisher = HttpRequest.BodyPublishers.ofString(requestParams.toString());
+      // qP has been replaced with params moved from original set
     } else {
       bodyPublisher = HttpRequest.BodyPublishers.noBody();
     }
