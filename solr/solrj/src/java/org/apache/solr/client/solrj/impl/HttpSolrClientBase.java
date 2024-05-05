@@ -162,6 +162,7 @@ public abstract class HttpSolrClientBase extends SolrClient {
     return isMultipart;
   }
 
+  // return a new MSP moving selected values from wparams
   protected ModifiableSolrParams calculateQueryParams(
       Set<String> queryParamNames, ModifiableSolrParams wparams) {
     ModifiableSolrParams queryModParams = new ModifiableSolrParams();
