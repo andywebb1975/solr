@@ -308,7 +308,10 @@ public class HttpJdkSolrClient extends HttpSolrClientBase {
       // bP receives any remaining params from original set
       // with this version the params are not fully encoded - we get raw Unicode chars, curly braces etc
       // and the body content length changes, presumably due to re-encoding
-      String bodyQueryString = requestParams.toString();
+      // String bodyQueryString = requestParams.toString();
+      // with this version the params are fully encoded - note the toQueryString() method adds an unwanted leading question mark
+      // but there's no longer a length change as the query is fully encoded before being given to HttpRequest
+      String bodyQueryString = requestParams.toQueryString().substring(1);
       bodyPublisher = HttpRequest.BodyPublishers.ofString(bodyQueryString);
       // this isn't intended to be merged - but it shows the content length change noted above
       if (bodyQueryString.length() != bodyPublisher.contentLength()) throw new URISyntaxException("inconsistent content length", bodyQueryString + " - " + bodyQueryString.length() + " -> " + bodyPublisher.contentLength());
