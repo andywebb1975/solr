@@ -306,7 +306,9 @@ public class HttpJdkSolrClient extends HttpSolrClientBase {
       // qP gains further (?) params moved from original set if solrRequest has params, but only if urlParamNames was set too
       queryParams.add(calculateQueryParams(solrRequest.getQueryParams(), requestParams));
       // bP receives any remaining params from original set
-      bodyPublisher = HttpRequest.BodyPublishers.ofString(requestParams.toString());
+      // with this version the params are not fully encoded - we get raw Unicode chars, curly braces etc
+      String bodyQueryString = requestParams.toString();
+      bodyPublisher = HttpRequest.BodyPublishers.ofString(bodyQueryString);
       // qP has been replaced with params moved from original set
     } else {
       bodyPublisher = HttpRequest.BodyPublishers.noBody();
