@@ -289,7 +289,10 @@ public abstract class HttpSolrClientTestBase extends SolrJettyTestBase {
     SolrInputDocument doc = new SolrInputDocument();
     doc.addField("id", docIdValue);
     req.add(doc);
+    // a non-ASCII character which should be URI-encoded
     req.setParam("a", "\u1234");
+    // curly quotes should be URI-encoded too
+    req.setParam("b", "{}");
 
     try {
       client.request(req);
