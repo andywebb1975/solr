@@ -21,6 +21,7 @@ import static org.hamcrest.CoreMatchers.instanceOf;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -346,24 +347,27 @@ public abstract class HttpSolrClientTestBase extends SolrJettyTestBase {
   protected void setReqParamsOf(UpdateRequest req, String... keys) {
     if (keys != null) {
       for (String k : keys) {
-        req.setParam(k, k + "Value");
+        // note inclusion of non-ASCII character, and curly quotes which should be URI encoded
+        req.setParam(k, k + "Value\u1234{}");
       }
     }
   }
 
-  protected void verifyServletState(HttpSolrClientBase client, SolrRequest<?> request) {
+  protected void verifyServletState(HttpSolrClientBase client, SolrRequest<?> request) throws Exception {
     // check query String
     Iterator<String> paramNames = request.getParams().getParameterNamesIterator();
     while (paramNames.hasNext()) {
       String name = paramNames.next();
       String[] values = request.getParams().getParams(name);
       if (values != null) {
+        // this can be enabled to see the raw query string (it's not expected to be an empty string!)
+        // assertEquals("", DebugServlet.queryString);
         for (String value : values) {
           boolean shouldBeInQueryString =
               client.getUrlParamNames().contains(name)
                   || (request.getQueryParams() != null && request.getQueryParams().contains(name));
           assertEquals(
-              shouldBeInQueryString, DebugServlet.queryString.contains(name + "=" + value));
+              shouldBeInQueryString, DebugServlet.queryString.contains(name + "=" + URLEncoder.encode(value, StandardCharsets.UTF_8.name())));
           // in either case, it should be in the parameters
           assertNotNull(DebugServlet.parameters.get(name));
           assertEquals(1, DebugServlet.parameters.get(name).length);
