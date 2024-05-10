@@ -299,23 +299,20 @@ public class HttpJdkSolrClient extends HttpSolrClientBase {
       InputStream is = streams.iterator().next().getStream();
       bodyPublisher = HttpRequest.BodyPublishers.ofInputStream(() -> is);
     } else if (queryParams != null && urlParamNames != null) {
-      // rP is a new name for the incoming qP
-      ModifiableSolrParams requestParams = queryParams;
-      // qP becomes a new object, with selected params moved from original set - when would urlParamNames be specified?
-      queryParams = calculateQueryParams(urlParamNames, requestParams);
-      // qP gains further (?) params moved from original set if solrRequest has params, but only if urlParamNames was set too
-      queryParams.add(calculateQueryParams(solrRequest.getQueryParams(), requestParams));
-      // bP receives any remaining params from original set
-      // with this version the params are not fully encoded - we get raw Unicode chars, curly braces etc
-      // and the body content length changes, presumably due to re-encoding
-      // String bodyQueryString = requestParams.toString();
-      // with this version the params are fully encoded - note the toQueryString() method adds an unwanted leading question mark
-      // but there's no longer a length change as the query is fully encoded before being given to HttpRequest
-      String bodyQueryString = requestParams.toQueryString().substring(1);
-      bodyPublisher = HttpRequest.BodyPublishers.ofString(bodyQueryString);
-      // this isn't intended to be merged - but it shows the content length change noted above
-      if (bodyQueryString.length() != bodyPublisher.contentLength()) throw new URISyntaxException("inconsistent content length", bodyQueryString + " - " + bodyQueryString.length() + " -> " + bodyPublisher.contentLength());
-      // qP has been replaced with params moved from original set
+
+      // move params specified in urlParamNames from queryParams into urlParams
+      ModifiableSolrParams urlParams = calculateQueryParams(urlParamNames, queryParams);
+
+      // note this is only triggered if urlParamNames is set too - this this correct?
+      urlParams.add(calculateQueryParams(solrRequest.getQueryParams(), queryParams));
+
+      // put the remaining params in the request body
+      // note the toQueryString() method adds a leading question mark which needs to be removed here
+      bodyPublisher = HttpRequest.BodyPublishers.ofString(queryParams.toQueryString().substring(1));
+
+      // replace queryParams with the selected set
+      queryParams = urlParams;
+
     } else {
       bodyPublisher = HttpRequest.BodyPublishers.noBody();
     }
