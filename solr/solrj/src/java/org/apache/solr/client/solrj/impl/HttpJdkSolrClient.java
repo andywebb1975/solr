@@ -299,11 +299,18 @@ public class HttpJdkSolrClient extends HttpSolrClientBase {
       InputStream is = streams.iterator().next().getStream();
       bodyPublisher = HttpRequest.BodyPublishers.ofInputStream(() -> is);
     } else if (queryParams != null && urlParamNames != null) {
-      ModifiableSolrParams requestParams = queryParams;
-      queryParams = calculateQueryParams(urlParamNames, requestParams);
-      queryParams.add(calculateQueryParams(solrRequest.getQueryParams(), requestParams));
+      // move params specified in urlParamNames from queryParams into urlParams
+      ModifiableSolrParams urlParams = calculateQueryParams(urlParamNames, queryParams);
+
+      // note this is only triggered if urlParamNames is set too - this this correct?
+      urlParams.add(calculateQueryParams(solrRequest.getQueryParams(), queryParams));
+
+      // put the remaining params in the request body
       // note the toQueryString() method adds a leading question mark which needs to be removed here
-      bodyPublisher = HttpRequest.BodyPublishers.ofString(requestParams.toQueryString().substring(1));
+      bodyPublisher = HttpRequest.BodyPublishers.ofString(queryParams.toQueryString().substring(1));
+
+      // replace queryParams with the selected set
+      queryParams = urlParams;
     } else {
       bodyPublisher = HttpRequest.BodyPublishers.noBody();
     }
