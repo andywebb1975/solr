@@ -21,6 +21,7 @@ import static org.hamcrest.CoreMatchers.instanceOf;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -112,7 +113,7 @@ public abstract class HttpSolrClientTestBase extends SolrJettyTestBase {
     assertNull(DebugServlet.headers.get("content-type"));
     // param encoding
     assertEquals(1, DebugServlet.parameters.get("a").length);
-    assertEquals("\u1234", DebugServlet.parameters.get("a")[0]);
+    assertEquals("\u1234\u007B", DebugServlet.parameters.get("a")[0]);
   }
 
   public void testQueryPost() throws Exception {
@@ -124,9 +125,11 @@ public abstract class HttpSolrClientTestBase extends SolrJettyTestBase {
     assertEquals("javabin", DebugServlet.parameters.get(CommonParams.WT)[0]);
     assertEquals(1, DebugServlet.parameters.get(CommonParams.VERSION).length);
     assertEquals(1, DebugServlet.parameters.get("a").length);
-    assertEquals("\u1234", DebugServlet.parameters.get("a")[0]);
+    assertEquals("\u1234\u007B", DebugServlet.parameters.get("a")[0]);
     assertEquals(expectedUserAgent(), DebugServlet.headers.get("user-agent"));
     assertEquals("application/x-www-form-urlencoded", DebugServlet.headers.get("content-type"));
+    // this validates that URI encoding has been applied - the content-length is smaller if not
+    assertEquals("41", DebugServlet.headers.get("content-length"));
   }
 
   public void testQueryPut() throws Exception {
@@ -138,9 +141,10 @@ public abstract class HttpSolrClientTestBase extends SolrJettyTestBase {
     assertEquals("javabin", DebugServlet.parameters.get(CommonParams.WT)[0]);
     assertEquals(1, DebugServlet.parameters.get(CommonParams.VERSION).length);
     assertEquals(1, DebugServlet.parameters.get("a").length);
-    assertEquals("\u1234", DebugServlet.parameters.get("a")[0]);
+    assertEquals("\u1234\u007B", DebugServlet.parameters.get("a")[0]);
     assertEquals(expectedUserAgent(), DebugServlet.headers.get("user-agent"));
     assertEquals("application/x-www-form-urlencoded", DebugServlet.headers.get("content-type"));
+    assertEquals("41", DebugServlet.headers.get("content-length"));
   }
 
   public void testQueryXmlGet() throws Exception {
@@ -152,7 +156,7 @@ public abstract class HttpSolrClientTestBase extends SolrJettyTestBase {
     assertEquals("xml", DebugServlet.parameters.get(CommonParams.WT)[0]);
     assertEquals(1, DebugServlet.parameters.get(CommonParams.VERSION).length);
     assertEquals(1, DebugServlet.parameters.get("a").length);
-    assertEquals("\u1234", DebugServlet.parameters.get("a")[0]);
+    assertEquals("\u1234\u007B", DebugServlet.parameters.get("a")[0]);
     assertEquals(expectedUserAgent(), DebugServlet.headers.get("user-agent"));
   }
 
@@ -165,7 +169,7 @@ public abstract class HttpSolrClientTestBase extends SolrJettyTestBase {
     assertEquals("xml", DebugServlet.parameters.get(CommonParams.WT)[0]);
     assertEquals(1, DebugServlet.parameters.get(CommonParams.VERSION).length);
     assertEquals(1, DebugServlet.parameters.get("a").length);
-    assertEquals("\u1234", DebugServlet.parameters.get("a")[0]);
+    assertEquals("\u1234\u007B", DebugServlet.parameters.get("a")[0]);
     assertEquals(expectedUserAgent(), DebugServlet.headers.get("user-agent"));
     assertEquals("application/x-www-form-urlencoded", DebugServlet.headers.get("content-type"));
   }
@@ -179,7 +183,7 @@ public abstract class HttpSolrClientTestBase extends SolrJettyTestBase {
     assertEquals("xml", DebugServlet.parameters.get(CommonParams.WT)[0]);
     assertEquals(1, DebugServlet.parameters.get(CommonParams.VERSION).length);
     assertEquals(1, DebugServlet.parameters.get("a").length);
-    assertEquals("\u1234", DebugServlet.parameters.get("a")[0]);
+    assertEquals("\u1234\u007B", DebugServlet.parameters.get("a")[0]);
     assertEquals(expectedUserAgent(), DebugServlet.headers.get("user-agent"));
     assertEquals("application/x-www-form-urlencoded", DebugServlet.headers.get("content-type"));
   }
@@ -283,7 +287,8 @@ public abstract class HttpSolrClientTestBase extends SolrJettyTestBase {
     SolrInputDocument doc = new SolrInputDocument();
     doc.addField("id", docIdValue);
     req.add(doc);
-    req.setParam("a", "\u1234");
+    // non-ASCII characters and curly quotes should be URI-encoded
+    req.setParam("a", "\u1234\u007B");
 
     try {
       client.request(req);
@@ -300,7 +305,7 @@ public abstract class HttpSolrClientTestBase extends SolrJettyTestBase {
         client.getParser().getVersion(), DebugServlet.parameters.get(CommonParams.VERSION)[0]);
     assertEquals(contentType, DebugServlet.headers.get("content-type"));
     assertEquals(1, DebugServlet.parameters.get("a").length);
-    assertEquals("\u1234", DebugServlet.parameters.get("a")[0]);
+    assertEquals("\u1234\u007B", DebugServlet.parameters.get("a")[0]);
 
     if (wt == WT.XML) {
       String requestBody = new String(DebugServlet.requestBody, StandardCharsets.UTF_8);
@@ -337,12 +342,13 @@ public abstract class HttpSolrClientTestBase extends SolrJettyTestBase {
   protected void setReqParamsOf(UpdateRequest req, String... keys) {
     if (keys != null) {
       for (String k : keys) {
-        req.setParam(k, k + "Value");
+        // note inclusion of non-ASCII character, and curly quotes which should be URI encoded
+        req.setParam(k, k + "Value\u1234\u007B");
       }
     }
   }
 
-  protected void verifyServletState(HttpSolrClientBase client, SolrRequest<?> request) {
+  protected void verifyServletState(HttpSolrClientBase client, SolrRequest<?> request) throws Exception {
     // check query String
     Iterator<String> paramNames = request.getParams().getParameterNamesIterator();
     while (paramNames.hasNext()) {
@@ -354,7 +360,7 @@ public abstract class HttpSolrClientTestBase extends SolrJettyTestBase {
               client.getUrlParamNames().contains(name)
                   || (request.getQueryParams() != null && request.getQueryParams().contains(name));
           assertEquals(
-              shouldBeInQueryString, DebugServlet.queryString.contains(name + "=" + value));
+              shouldBeInQueryString, DebugServlet.queryString.contains(name + "=" + URLEncoder.encode(value, StandardCharsets.UTF_8.name())));
           // in either case, it should be in the parameters
           assertNotNull(DebugServlet.parameters.get(name));
           assertEquals(1, DebugServlet.parameters.get(name).length);

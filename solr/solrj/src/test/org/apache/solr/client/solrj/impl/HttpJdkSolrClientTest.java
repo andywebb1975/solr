@@ -172,7 +172,7 @@ public class HttpJdkSolrClientTest extends HttpSolrClientTestBase {
     }
     String url = getBaseUrl() + DEBUG_SERVLET_PATH;
     SolrQuery q = new SolrQuery("foo");
-    q.setParam("a", "\u1234");
+    q.setParam("a", "\u1234\u007B");
     HttpJdkSolrClient.Builder b = builder(url);
     if (rp != null) {
       b.withResponseParser(rp);
@@ -313,7 +313,7 @@ public class HttpJdkSolrClientTest extends HttpSolrClientTestBase {
   public void testUpdateDefault() throws Exception {
     String url = getBaseUrl() + DEBUG_SERVLET_PATH;
     try (HttpJdkSolrClient client = builder(url).build()) {
-      testUpdate(client, WT.JAVABIN, "application/javabin", "\u1234");
+      testUpdate(client, WT.JAVABIN, "application/javabin", "\u1234\u007B");
     }
   }
 
@@ -364,7 +364,7 @@ public class HttpJdkSolrClientTest extends HttpSolrClientTestBase {
             .withRequestWriter(new BinaryRequestWriter())
             .withResponseParser(new BinaryResponseParser())
             .build()) {
-      testUpdate(client, WT.JAVABIN, "application/javabin", "\u1234");
+      testUpdate(client, WT.JAVABIN, "application/javabin", "\u1234\u007B");
       assertNoHeadRequestWithSsl(client);
     }
   }
