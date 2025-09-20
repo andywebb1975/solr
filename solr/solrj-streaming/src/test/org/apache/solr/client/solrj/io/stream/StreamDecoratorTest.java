@@ -2454,13 +2454,13 @@ public class StreamDecoratorTest extends SolrCloudTestCase {
                   + ", q=\"side_s:left\", fl=\"id,join1_i,join2_s,ident_s\", sort=\"join1_i asc, join2_s asc, id asc\"),"
                   + "search("
                   + COLLECTIONORALIAS
-                  + ", q=\"side_s:right\", fl=\"join1_i,join2_s,ident_s\", sort=\"join1_i asc, join2_s asc\"),"
-                  + "on=\"join1_i=join1_i, join2_s=join2_s\")");
+                  + ", q=\"side_s:right\", fl=\"id,join1_i,join2_s,ident_s\", sort=\"join1_i asc, join2_s asc, id asc\"),"
+                  + "on=\"join1_i, join2_s\")");
       stream = new LeftOuterJoinStream(expression, factory);
       stream.setStreamContext(streamContext);
       tuples = getTuples(stream);
       assertEquals(10, tuples.size());
-      assertOrder(tuples, 1, 1, 15, 15, 2, 3, 4, 5, 6, 7);
+      assertOrder(tuples, 8, 9, 8, 9, 2, 10, 11, 12, 6, 14);
 
       // Basic desc
       expression =
@@ -2468,16 +2468,16 @@ public class StreamDecoratorTest extends SolrCloudTestCase {
               "leftOuterJoin("
                   + "search("
                   + COLLECTIONORALIAS
-                  + ", q=\"side_s:left\", fl=\"id,join1_i,join2_s,ident_s\", sort=\"join1_i desc, join2_s asc\"),"
+                  + ", q=\"side_s:left\", fl=\"id,join1_i,join2_s,ident_s\", sort=\"join1_i desc, join2_s asc, id desc\"),"
                   + "search("
                   + COLLECTIONORALIAS
-                  + ", q=\"side_s:right\", fl=\"join1_i,join2_s,ident_s\", sort=\"join1_i desc, join2_s asc\"),"
-                  + "on=\"join1_i=join1_i, join2_s=join2_s\")");
+                  + ", q=\"side_s:right\", fl=\"id,join1_i,join2_s,ident_s\", sort=\"join1_i desc, join2_s asc, id desc\"),"
+                  + "on=\"join1_i, join2_s\")");
       stream = new LeftOuterJoinStream(expression, factory);
       stream.setStreamContext(streamContext);
       tuples = getTuples(stream);
       assertEquals(10, tuples.size());
-      assertOrder(tuples, 7, 6, 3, 4, 5, 1, 1, 15, 15, 2);
+      assertOrder(tuples, 14, 6, 10, 11, 12, 9, 8, 9, 8, 2);
 
       // Results in both searches, no join matches
       expression =
@@ -2488,8 +2488,8 @@ public class StreamDecoratorTest extends SolrCloudTestCase {
                   + ", q=\"side_s:left\", fl=\"id,join1_i,join2_s,ident_s\", sort=\"ident_s asc\"),"
                   + "search("
                   + COLLECTIONORALIAS
-                  + ", q=\"side_s:right\", fl=\"id,join1_i,join2_s,ident_s\", sort=\"ident_s asc\", aliases=\"id=right.id, join1_i=right.join1_i, join2_s=right.join2_s, ident_s=right.ident_s\"),"
-                  + "on=\"ident_s=right.ident_s\")");
+                  + ", q=\"side_s:right\", fl=\"id,join1_i,join2_s,ident_s\", sort=\"ident_s asc\"),"
+                  + "on=\"ident_s\")");
       stream = new LeftOuterJoinStream(expression, factory);
       stream.setStreamContext(streamContext);
       tuples = getTuples(stream);
@@ -2505,13 +2505,13 @@ public class StreamDecoratorTest extends SolrCloudTestCase {
                   + ", q=\"side_s:left\", fl=\"id,join1_i,join2_s,ident_s\", sort=\"join1_i asc, join2_s asc, id asc\"),"
                   + "search("
                   + COLLECTIONORALIAS
-                  + ", q=\"side_s:right\", fl=\"join3_i,join2_s,ident_s\", sort=\"join3_i asc, join2_s asc\", aliases=\"join3_i=aliasesField\"),"
-                  + "on=\"join1_i=aliasesField, join2_s=join2_s\")");
+                  + ", q=\"side_s:right\", fl=\"id,join3_i,join2_s,ident_s\", sort=\"join3_i asc, join2_s asc, id asc\", aliases=\"join3_i=aliasesField\"),"
+                  + "on=\"join1_i=aliasesField, join2_s\")");
       stream = new LeftOuterJoinStream(expression, factory);
       stream.setStreamContext(streamContext);
       tuples = getTuples(stream);
       assertEquals(10, tuples.size());
-      assertOrder(tuples, 1, 1, 15, 15, 2, 3, 4, 5, 6, 7);
+      assertOrder(tuples, 8, 9, 8, 9, 2, 10, 11, 12, 6, 14);
     } finally {
       solrClientCache.close();
     }
