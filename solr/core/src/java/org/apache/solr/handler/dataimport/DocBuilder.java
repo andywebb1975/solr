@@ -16,7 +16,6 @@
  */
 package org.apache.solr.handler.dataimport;
 
-import org.apache.solr.common.SolrException;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.util.IOUtils;
 import org.apache.solr.core.SolrCore;
@@ -567,9 +566,9 @@ public class DocBuilder {
             if (e.getErrCode() == DataImportHandlerException.SKIP) {
               importStatistics.skipDocCount.getAndIncrement();
               doc = null;
-            } else {
-              SolrException.log(log, "Exception while processing: "
-                      + epw.getEntity().getName() + " document : " + doc, e);
+            // } else {
+              // SolrException.log(log, "Exception while processing: "
+              //        + epw.getEntity().getName() + " document : " + doc, e);
             }
             if (e.getErrCode() == DataImportHandlerException.SEVERE)
               throw e;

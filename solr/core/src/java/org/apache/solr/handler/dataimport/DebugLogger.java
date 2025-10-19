@@ -248,10 +248,6 @@ class DebugLogger {
     if (t instanceof EntityProcessorWrapper.ReflectionTransformer) {
       return ((EntityProcessorWrapper.ReflectionTransformer) t).trans;
     }
-    if (t instanceof ScriptTransformer) {
-      ScriptTransformer scriptTransformer = (ScriptTransformer) t;
-      return "script:" + scriptTransformer.getFunctionName();
-    }
     if (transClass.getPackage().equals(DebugLogger.class.getPackage())) {
       return transClass.getSimpleName();
     } else {

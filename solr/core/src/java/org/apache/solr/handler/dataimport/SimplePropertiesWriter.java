@@ -128,7 +128,7 @@ public class SimplePropertiesWriter extends DIHProperties {
       if (core == null) {
         throw new DataImportHandlerException(SEVERE, "Can't determine core");
       } else {
-        configDir = core.getResourceLoader().getConfigDir();
+        configDir = core.getResourceLoader().getConfigPath().toString();
       }
     }
   }
@@ -150,7 +150,7 @@ public class SimplePropertiesWriter extends DIHProperties {
       return persistFile.exists() 
           ? persistFile.canWrite() 
           : persistFile.getParentFile().canWrite();
-    } catch (AccessControlException e) {
+    } catch (Exception e) {
       return false;
     }
   }

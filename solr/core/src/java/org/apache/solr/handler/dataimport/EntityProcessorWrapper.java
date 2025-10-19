@@ -100,16 +100,6 @@ public class EntityProcessorWrapper extends EntityProcessor {
     };
     for (String aTransArr : transArr) {
       String trans = aTransArr.trim();
-      if (trans.startsWith("script:")) {
-        // The script transformer is a potential vulnerability, esp. when the script is
-        // provided from an untrusted source. Check and don't proceed if source is untrusted.
-        checkIfTrusted(trans);
-        String functionName = trans.substring("script:".length());
-        ScriptTransformer scriptTransformer = new ScriptTransformer();
-        scriptTransformer.setFunctionName(functionName);
-        transformers.add(scriptTransformer);
-        continue;
-      }
       try {
         @SuppressWarnings({"rawtypes"})
         Class clazz = DocBuilder.loadClass(trans, context.getSolrCore());
@@ -131,24 +121,6 @@ public class EntityProcessorWrapper extends EntityProcessor {
       }
     }
 
-  }
-
-  private void checkIfTrusted(String trans) {
-    if (docBuilder != null) {
-      SolrCore core = docBuilder.dataImporter.getCore();
-      boolean trusted = (core != null)? core.getCoreDescriptor().isConfigSetTrusted(): true;
-      if (!trusted) {
-        Exception ex = new SolrException(ErrorCode.UNAUTHORIZED, "The configset for this collection was uploaded "
-            + "without any authentication in place,"
-            + " and this transformer is not available for collections with untrusted configsets. To use this transformer,"
-            + " re-upload the configset after enabling authentication and authorization.");
-        String msg = "Transformer: "
-            + trans
-            + ". " + ex.getMessage();
-        log.error(msg);
-        wrapAndThrow(SEVERE, ex, msg);
-      }
-    }
   }
 
   @SuppressWarnings("unchecked")
@@ -275,7 +247,7 @@ public class EntityProcessorWrapper extends EntityProcessor {
           wrapAndThrow(SEVERE, e);
         } else {
           //SKIP is not really possible. If this calls the nextRow() again the Entityprocessor would be in an inconisttent state           
-          SolrException.log(log, "Exception in entity : "+ entityName, e);
+          // SolrException.log(log, "Exception in entity : "+ entityName, e);
           return null;
         }
       }
