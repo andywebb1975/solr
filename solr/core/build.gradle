@@ -71,6 +71,9 @@ dependencies {
   implementation libs.jakarta.ws.rsapi
   implementation libs.jakarta.annotation.api
 
+  implementation libs.apache.httpcomponents.httpclient
+  implementation libs.apache.httpcomponents.httpcore
+  
   // Non-API below; although there are exceptions
 
   runtimeOnly libs.apache.lucene.analysis.kuromoji
