@@ -128,7 +128,7 @@ public class SimplePropertiesWriter extends DIHProperties {
       if (core == null) {
         throw new DataImportHandlerException(SEVERE, "Can't determine core");
       } else {
-        configDir = core.getResourceLoader().getConfigDir();
+        configDir = core.getResourceLoader().getConfigPath().toString();
       }
     }
   }
