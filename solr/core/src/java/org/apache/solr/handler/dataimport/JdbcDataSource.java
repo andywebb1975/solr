@@ -539,6 +539,7 @@ public class JdbcDataSource extends
     }
   }
 
+  @SuppressWarnings("removal")
   @Override
   protected void finalize() throws Throwable {
     try {
