@@ -100,13 +100,6 @@ public class EntityProcessorWrapper extends EntityProcessor {
     };
     for (String aTransArr : transArr) {
       String trans = aTransArr.trim();
-      if (trans.startsWith("script:")) {
-        String functionName = trans.substring("script:".length());
-        ScriptTransformer scriptTransformer = new ScriptTransformer();
-        scriptTransformer.setFunctionName(functionName);
-        transformers.add(scriptTransformer);
-        continue;
-      }
       try {
         @SuppressWarnings({"rawtypes"})
         Class clazz = DocBuilder.loadClass(trans, context.getSolrCore());
