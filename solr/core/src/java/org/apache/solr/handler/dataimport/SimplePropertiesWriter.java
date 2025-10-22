@@ -150,7 +150,7 @@ public class SimplePropertiesWriter extends DIHProperties {
       return persistFile.exists() 
           ? persistFile.canWrite() 
           : persistFile.getParentFile().canWrite();
-    } catch (AccessControlException e) {
+    } catch (Exception e) {
       return false;
     }
   }
