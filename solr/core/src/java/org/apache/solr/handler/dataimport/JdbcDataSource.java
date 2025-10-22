@@ -20,7 +20,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.solr.handler.dataimport.DataImportHandlerException.wrapAndThrow;
 import static org.apache.solr.handler.dataimport.DataImportHandlerException.SEVERE;
 
-import org.apache.solr.common.SolrException;
 import org.apache.solr.util.CryptoKeys;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

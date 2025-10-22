@@ -17,7 +17,6 @@
 package org.apache.solr.handler.dataimport;
 
 import org.apache.solr.common.EmptyEntityResolver;
-import org.apache.solr.common.SolrException;
 import org.apache.solr.core.SolrCore;
 import org.apache.solr.schema.IndexSchema;
 import org.apache.solr.util.SystemIdResolver;
@@ -428,7 +427,7 @@ public class DataImporter {
       if (!requestParams.isDebug())
         cumulativeStatistics.add(docBuilder.importStatistics);
     } catch (Exception e) {
-      SolrException.log(log, "Full Import failed", e);
+      // SolrException.log(log, "Full Import failed", e);
       docBuilder.handleError("Full Import failed", e);
     } finally {
       setStatus(Status.IDLE);

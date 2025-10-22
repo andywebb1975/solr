@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.apache.solr.common.SolrException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -153,8 +152,8 @@ public class DIHCacheSupport {
       if (rowIterator.hasNext()) return rowIterator.next();
       return null;
     } catch (Exception e) {
-      SolrException.log(log, "getNextFromCache() failed for query '" + query
-          + "'", e);
+      // SolrException.log(log, "getNextFromCache() failed for query '" + query
+      //   + "'", e);
       wrapAndThrow(DataImportHandlerException.WARN, e);
       return null;
     }

@@ -275,7 +275,7 @@ public class EntityProcessorWrapper extends EntityProcessor {
           wrapAndThrow(SEVERE, e);
         } else {
           //SKIP is not really possible. If this calls the nextRow() again the Entityprocessor would be in an inconisttent state           
-          SolrException.log(log, "Exception in entity : "+ entityName, e);
+          // SolrException.log(log, "Exception in entity : "+ entityName, e);
           return null;
         }
       }
