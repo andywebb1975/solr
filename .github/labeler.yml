@@ -109,6 +109,11 @@ module:clustering:
       - any-glob-to-any-file:
           - solr/modules/clustering/**
 
+module:dataimporthandler:
+  - changed-fields:
+      - any-glob-to-any-file:
+          - solr/modules/dataimporthandler/**
+
 module:extraction:
   - changed-files:
       - any-glob-to-any-file:
