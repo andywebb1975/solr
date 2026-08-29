@@ -40,6 +40,7 @@ public class SpellingResult {
 
   private Map<Token, Integer> tokenFrequency;
   public static final int NO_FREQUENCY_INFO = -1;
+  public static final float NO_SCORE_INFO = -1f;
 
   public SpellingResult() {}
 
@@ -63,6 +64,7 @@ public class SpellingResult {
       SuggestWord suggestWord = new SuggestWord();
       suggestWord.string = suggestion;
       suggestWord.freq = NO_FREQUENCY_INFO;
+      suggestWord.score = NO_SCORE_INFO;
       map.put(suggestion, suggestWord);
     }
   }
@@ -96,6 +98,7 @@ public class SpellingResult {
     SuggestWord suggestWord = new SuggestWord();
     suggestWord.string = suggestion.string;
     suggestWord.freq = suggestion.freq;
+    suggestWord.score = NO_SCORE_INFO;
     map.put(suggestion.string, suggestWord);
   }
 

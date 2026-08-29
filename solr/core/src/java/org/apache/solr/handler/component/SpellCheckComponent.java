@@ -703,6 +703,7 @@ public class SpellCheckComponent extends SearchComponent implements SolrCoreAwar
             SimpleOrderedMap<Object> sugEntry = new SimpleOrderedMap<>();
             sugEntry.add("word", suggEntry.getKey());
             sugEntry.add("freq", suggEntry.getValue().freq);
+            sugEntry.add("score", suggEntry.getValue().score);
             sugs.add(sugEntry);
           }
         } else {
