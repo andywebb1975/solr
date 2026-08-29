@@ -36,7 +36,7 @@ public class SpellingResult {
    * Key == token Value = Map -> key is the suggestion, value is the frequency of the token in the
    * collection
    */
-  private Map<Token, LinkedHashMap<String, Integer>> suggestions = new LinkedHashMap<>();
+  private Map<Token, LinkedHashMap<String, SuggestWord>> suggestions = new LinkedHashMap<>();
 
   private Map<Token, Integer> tokenFrequency;
   public static final int NO_FREQUENCY_INFO = -1;
@@ -54,13 +54,16 @@ public class SpellingResult {
    * @param suggestions The suggestions
    */
   public void add(Token token, List<String> suggestions) {
-    LinkedHashMap<String, Integer> map = this.suggestions.get(token);
+    LinkedHashMap<String, SuggestWord> map = this.suggestions.get(token);
     if (map == null) {
       map = new LinkedHashMap<>();
       this.suggestions.put(token, map);
     }
     for (String suggestion : suggestions) {
-      map.put(suggestion, NO_FREQUENCY_INFO);
+      SuggestWord suggestWord = new SuggestWord();
+      suggestWord.string = suggestion;
+      suggestWord.freq = NO_FREQUENCY_INFO;
+      map.put(suggestion, suggestWord);
     }
   }
 
@@ -84,25 +87,27 @@ public class SpellingResult {
    * @param suggestion The suggestion for the Token as a {@link SuggestWord} instance
    */
   public void add(Token token, SuggestWord suggestion) {
-    LinkedHashMap<String, Integer> map = this.suggestions.get(token);
+    LinkedHashMap<String, SuggestWord> map = this.suggestions.get(token);
     // Don't bother adding if we already have this token
     if (map == null) {
       map = new LinkedHashMap<>();
       this.suggestions.put(token, map);
     }
-    map.put(suggestion.string, suggestion.freq);
+    SuggestWord suggestWord = new SuggestWord();
+    suggestWord.string = suggestion.string;
+    suggestWord.freq = suggestion.freq;
+    map.put(suggestion.string, suggestWord);
   }
 
   /**
    * Gets the suggestions for the given token.
    *
    * @param token The {@link Token} to look up
-   * @return A LinkedHashMap of the suggestions. Key is the suggestion, value is the token frequency
-   *     in the index, else {@link #NO_FREQUENCY_INFO}.
+   * @return A LinkedHashMap of the suggestions. Key is the suggestion, value is the {@link SuggestWord}
    *     <p>The suggestions are added in sorted order (i.e. best suggestion first) then the iterator
    *     will return the suggestions in order
    */
-  public LinkedHashMap<String, Integer> get(Token token) {
+  public LinkedHashMap<String, SuggestWord> get(Token token) {
     return suggestions.get(token);
   }
 
@@ -124,10 +129,9 @@ public class SpellingResult {
    * All the suggestions. The ordering of the inner LinkedHashMap is by best suggestion first.
    *
    * @return The Map of suggestions for each Token. Key is the token, value is a LinkedHashMap whose
-   *     key is the Suggestion and the value is the frequency or {@link #NO_FREQUENCY_INFO} if
-   *     frequency info is not available.
+     *     key is the Suggestion and the value is the {@link SuggestWord} instance.
    */
-  public Map<Token, LinkedHashMap<String, Integer>> getSuggestions() {
+  public Map<Token, LinkedHashMap<String, SuggestWord>> getSuggestions() {
     return suggestions;
   }
 
