@@ -131,17 +131,17 @@ public class IndexBasedSpellCheckerTest extends SolrTestCaseJ4 {
               SpellingResult result = checker.getSuggestions(spellOpts);
               assertNotNull("result is null and it shouldn't be", result);
               // should be lowercased, b/c we are using a lowercasing analyzer
-              Map<String, Integer> suggestions = result.get(spellOpts.tokens.iterator().next());
+              Map<String, SuggestWord> suggestions = result.get(spellOpts.tokens.iterator().next());
               assertNotNull("documemt is null and it shouldn't be", suggestions);
               assertEquals(
                   "documemt Size: " + suggestions.size() + " is not: " + 1, 1, suggestions.size());
-              Map.Entry<String, Integer> entry = suggestions.entrySet().iterator().next();
+              Map.Entry<String, SuggestWord> entry = suggestions.entrySet().iterator().next();
               assertEquals(
                   entry.getKey() + " is not equal to " + "document", "document", entry.getKey());
               assertEquals(
                   entry.getValue() + " does not equal: " + SpellingResult.NO_FREQUENCY_INFO,
                   SpellingResult.NO_FREQUENCY_INFO,
-                  (int) entry.getValue());
+                  entry.getValue().freq);
 
               // test something not in the spell checker
               spellOpts.tokens = queryConverter.convert("super");
@@ -184,7 +184,7 @@ public class IndexBasedSpellCheckerTest extends SolrTestCaseJ4 {
               assertEquals(
                   entry.getValue() + " does not equal: " + SpellingResult.NO_FREQUENCY_INFO,
                   SpellingResult.NO_FREQUENCY_INFO,
-                  (int) entry.getValue());
+                  entry.getValue().freq);
 
               entry = suggestions.entrySet().iterator().next();
               assertNotEquals(
@@ -194,7 +194,7 @@ public class IndexBasedSpellCheckerTest extends SolrTestCaseJ4 {
               assertEquals(
                   entry.getValue() + " does not equal: " + SpellingResult.NO_FREQUENCY_INFO,
                   SpellingResult.NO_FREQUENCY_INFO,
-                  (int) entry.getValue());
+                  entry.getValue().freq);
 
               // Check empty token due to spellcheck.q = ""
               spellOpts.tokens = List.of(new Token("", 0, 0));
@@ -237,14 +237,15 @@ public class IndexBasedSpellCheckerTest extends SolrTestCaseJ4 {
               SpellingResult result = checker.getSuggestions(spellOpts);
               assertNotNull("result is null and it shouldn't be", result);
               // should be lowercased, b/c we are using a lowercasing analyzer
-              Map<String, Integer> suggestions = result.get(spellOpts.tokens.iterator().next());
+              Map<String, SuggestWord> suggestions = result.get(spellOpts.tokens.iterator().next());
               assertNotNull("documemt is null and it shouldn't be", suggestions);
               assertEquals(
                   "documemt Size: " + suggestions.size() + " is not: " + 1, 1, suggestions.size());
-              Map.Entry<String, Integer> entry = suggestions.entrySet().iterator().next();
+              Map.Entry<String, SuggestWord> entry = suggestions.entrySet().iterator().next();
               assertEquals(
                   entry.getKey() + " is not equal to " + "document", "document", entry.getKey());
-              assertEquals(entry.getValue() + " does not equal: " + 2, 2, (int) entry.getValue());
+              assertEquals(
+                  entry.getValue().freq + " does not equal: " + 2, 2, entry.getValue().freq);
 
               // test something not in the spell checker
               spellOpts.tokens = queryConverter.convert("super");
@@ -357,13 +358,14 @@ public class IndexBasedSpellCheckerTest extends SolrTestCaseJ4 {
               SpellingResult result = checker.getSuggestions(spellOpts);
               assertNotNull("result is null and it shouldn't be", result);
               // should be lowercased, b/c we are using a lowercasing analyzer
-              Map<String, Integer> suggestions = result.get(spellOpts.tokens.iterator().next());
+              Map<String, SuggestWord> suggestions = result.get(spellOpts.tokens.iterator().next());
               assertNotNull("flesh is null and it shouldn't be", suggestions);
               assertEquals(
                   "flesh Size: " + suggestions.size() + " is not: " + 1, 1, suggestions.size());
-              Map.Entry<String, Integer> entry = suggestions.entrySet().iterator().next();
+              Map.Entry<String, SuggestWord> entry = suggestions.entrySet().iterator().next();
               assertEquals(entry.getKey() + " is not equal to " + "flash", "flash", entry.getKey());
-              assertEquals(entry.getValue() + " does not equal: " + 1, 1, (int) entry.getValue());
+              assertEquals(
+                  entry.getValue().freq + " does not equal: " + 1, 1, entry.getValue().freq);
 
               // test something not in the spell checker
               spellOpts.tokens = queryConverter.convert("super");

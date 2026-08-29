@@ -658,14 +658,14 @@ public class SpellCheckComponent extends SearchComponent implements SolrCoreAwar
       String origQuery,
       boolean extendedResults) {
     NamedList<Object> result = new NamedList<>();
-    Map<Token, LinkedHashMap<String, Integer>> suggestions = spellingResult.getSuggestions();
+    Map<Token, LinkedHashMap<String, SuggestWord>> suggestions = spellingResult.getSuggestions();
     boolean hasFreqInfo = spellingResult.hasTokenFrequencyInfo();
     boolean hasSuggestions = false;
     boolean hasZeroFrequencyToken = false;
-    for (Map.Entry<Token, LinkedHashMap<String, Integer>> entry : suggestions.entrySet()) {
+    for (Map.Entry<Token, LinkedHashMap<String, SuggestWord>> entry : suggestions.entrySet()) {
       Token inputToken = entry.getKey();
       String tokenString = new String(inputToken.buffer(), 0, inputToken.length());
-      Map<String, Integer> theSuggestions = new LinkedHashMap<>(entry.getValue());
+      Map<String, SuggestWord> theSuggestions = new LinkedHashMap<>(entry.getValue());
       theSuggestions.keySet().removeIf(sug -> sug.equals(tokenString));
       if (theSuggestions.size() > 0) {
         hasSuggestions = true;
@@ -689,10 +689,11 @@ public class SpellCheckComponent extends SearchComponent implements SolrCoreAwar
 
           ArrayList<SimpleOrderedMap<Object>> sugs = new ArrayList<>();
           suggestionList.add("suggestion", sugs);
-          for (Map.Entry<String, Integer> suggEntry : theSuggestions.entrySet()) {
+          for (Map.Entry<String, SuggestWord> suggEntry : theSuggestions.entrySet()) {
             SimpleOrderedMap<Object> sugEntry = new SimpleOrderedMap<>();
             sugEntry.add("word", suggEntry.getKey());
-            sugEntry.add("freq", suggEntry.getValue());
+            sugEntry.add("freq", suggEntry.getValue().freq);
+            sugEntry.add("score", suggEntry.getValue().score);
             sugs.add(sugEntry);
           }
         } else {

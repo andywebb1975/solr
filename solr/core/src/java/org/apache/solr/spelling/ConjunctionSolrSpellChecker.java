@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.search.spell.StringDistance;
+import org.apache.lucene.search.spell.SuggestWord;
 import org.apache.solr.common.util.NamedList;
 import org.apache.solr.core.SolrCore;
 import org.apache.solr.handler.component.ResponseBuilder;
@@ -131,14 +132,15 @@ public class ConjunctionSolrSpellChecker extends SolrSpellChecker {
   // checker its own weight and use that in combination to score & frequency to sort the results ?
   private SpellingResult mergeCheckers(SpellingResult[] results, int numSug) {
     Map<Token, Integer> combinedTokenFrequency = new HashMap<>();
-    Map<Token, List<LinkedHashMap<String, Integer>>> allSuggestions = new LinkedHashMap<>();
+    Map<Token, List<LinkedHashMap<String, SuggestWord>>> allSuggestions = new LinkedHashMap<>();
     for (SpellingResult result : results) {
       if (result.getTokenFrequency() != null) {
         combinedTokenFrequency.putAll(result.getTokenFrequency());
       }
-      for (Map.Entry<Token, LinkedHashMap<String, Integer>> entry :
+      for (Map.Entry<Token, LinkedHashMap<String, SuggestWord>> entry :
           result.getSuggestions().entrySet()) {
-        List<LinkedHashMap<String, Integer>> allForThisToken = allSuggestions.get(entry.getKey());
+        List<LinkedHashMap<String, SuggestWord>> allForThisToken =
+            allSuggestions.get(entry.getKey());
         if (allForThisToken == null) {
           allForThisToken = new ArrayList<>();
           allSuggestions.put(entry.getKey(), allForThisToken);
@@ -147,21 +149,25 @@ public class ConjunctionSolrSpellChecker extends SolrSpellChecker {
       }
     }
     SpellingResult combinedResult = new SpellingResult();
-    for (Map.Entry<Token, List<LinkedHashMap<String, Integer>>> entry : allSuggestions.entrySet()) {
+    for (Map.Entry<Token, List<LinkedHashMap<String, SuggestWord>>> entry :
+        allSuggestions.entrySet()) {
       Token original = entry.getKey();
-      List<Iterator<Map.Entry<String, Integer>>> corrIters =
+      List<Iterator<Map.Entry<String, SuggestWord>>> corrIters =
           new ArrayList<>(entry.getValue().size());
-      for (LinkedHashMap<String, Integer> corrections : entry.getValue()) {
+      for (LinkedHashMap<String, SuggestWord> corrections : entry.getValue()) {
         corrIters.add(corrections.entrySet().iterator());
       }
       int numberAdded = 0;
       while (numberAdded < numSug) {
         boolean anyData = false;
-        for (Iterator<Map.Entry<String, Integer>> iter : corrIters) {
+        for (Iterator<Map.Entry<String, SuggestWord>> iter : corrIters) {
           if (iter.hasNext()) {
             anyData = true;
-            Map.Entry<String, Integer> corr = iter.next();
-            combinedResult.add(original, corr.getKey(), corr.getValue());
+            Map.Entry<String, SuggestWord> corr = iter.next();
+            SuggestWord suggestion = new SuggestWord();
+            suggestion.string = corr.getKey();
+            suggestion.freq = corr.getValue().freq;
+            combinedResult.add(original, suggestion);
             Integer tokenFrequency = combinedTokenFrequency.get(original);
             combinedResult.addFrequency(original, tokenFrequency == null ? 0 : tokenFrequency);
             if (++numberAdded == numSug) {

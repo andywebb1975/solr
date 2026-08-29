@@ -190,7 +190,10 @@ public abstract class AbstractLuceneSpellChecker extends SolrSpellChecker {
         if (countLimit > 0) {
           for (int i = 0; i < countLimit; i++) {
             term = new Term(field, suggestions[i]);
-            result.add(token, suggestions[i], reader.docFreq(term));
+            SuggestWord suggestWord = new SuggestWord();
+            suggestWord.string = suggestions[i];
+            suggestWord.freq = reader.docFreq(term);
+            result.add(token, suggestWord);
           }
         } else {
           List<String> suggList = List.of();

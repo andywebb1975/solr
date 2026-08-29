@@ -240,7 +240,7 @@ public class SpellCheckComponentTest extends SolrTestCaseJ4 {
             "3",
             SpellingParams.SPELLCHECK_EXTENDED_RESULTS,
             "true"),
-        "/spellcheck/suggestions/[1]/suggestion==[{'word':'blud','freq':1}, {'word':'blue','freq':1}, {'word':'blee','freq':1}]");
+        "/spellcheck/suggestions/[1]/suggestion==[{'word':'blud','freq':1,'score':0.0}, {'word':'blue','freq':1,'score':0.0}, {'word':'blee','freq':1,'score':0.0}]");
   }
 
   @Test
@@ -566,7 +566,7 @@ public class SpellCheckComponentTest extends SolrTestCaseJ4 {
             "5",
             SpellingParams.SPELLCHECK_EXTENDED_RESULTS,
             "true"),
-        "/spellcheck/suggestions/[1]/suggestion==[{'word':'document','freq':2}]");
+        "/spellcheck/suggestions/[1]/suggestion==[{'word':'document','freq':2,'score':0.0}]");
 
     assertJQ(
         reqWithPath(
@@ -581,7 +581,7 @@ public class SpellCheckComponentTest extends SolrTestCaseJ4 {
             "5",
             SpellingParams.SPELLCHECK_EXTENDED_RESULTS,
             "true"),
-        "/spellcheck/suggestions/[1]/suggestion==[{'word':'document','freq':2}]");
+        "/spellcheck/suggestions/[1]/suggestion==[{'word':'document','freq':2,'score':0.0}]");
 
     // TODO:  how do we make this into a 1-liner using "assertQ()" ???
     SolrCore core = h.getCore();
