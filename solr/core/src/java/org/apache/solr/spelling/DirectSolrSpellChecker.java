@@ -230,7 +230,7 @@ public class DirectSolrSpellChecker extends SolrSpellChecker {
         result.add(token, empty);
       } else {
         for (SuggestWord suggestion : suggestions) {
-          // there's nowhere to record the score :-(
+          // this is seen in log, suggestions have scores at this point
           log.debug("token: {}, suggestion: {}", token.toString(), suggestion.toString());
           result.add(token, suggestion);
         }
