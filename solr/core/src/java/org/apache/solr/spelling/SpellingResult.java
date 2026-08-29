@@ -21,6 +21,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.lucene.search.spell.SuggestWord;
+
 /**
  * Implementations of SolrSpellChecker must return suggestions as SpellResult instance. This is
  * converted into the required NamedList format in SpellCheckComponent.
@@ -79,17 +81,16 @@ public class SpellingResult {
    * Suggestions must be added with the best suggestion first. ORDER is important.
    *
    * @param token The {@link Token}
-   * @param suggestion The suggestion for the Token
-   * @param docFreq The document frequency
+   * @param suggestion The suggestion for the Token as a {@link SuggestWord} instance
    */
-  public void add(Token token, String suggestion, int docFreq) {
+  public void add(Token token, SuggestWord suggestion) {
     LinkedHashMap<String, Integer> map = this.suggestions.get(token);
     // Don't bother adding if we already have this token
     if (map == null) {
       map = new LinkedHashMap<>();
       this.suggestions.put(token, map);
     }
-    map.put(suggestion, docFreq);
+    map.put(suggestion.string, suggestion.freq);
   }
 
   /**

@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.search.spell.StringDistance;
+import org.apache.lucene.search.spell.SuggestWord;
 import org.apache.solr.common.util.NamedList;
 import org.apache.solr.core.SolrCore;
 import org.apache.solr.handler.component.ResponseBuilder;
@@ -161,7 +162,10 @@ public class ConjunctionSolrSpellChecker extends SolrSpellChecker {
           if (iter.hasNext()) {
             anyData = true;
             Map.Entry<String, Integer> corr = iter.next();
-            combinedResult.add(original, corr.getKey(), corr.getValue());
+            SuggestWord suggestion = new SuggestWord();
+            suggestion.string = corr.getKey();
+            suggestion.freq = corr.getValue();
+            combinedResult.add(original, suggestion);
             Integer tokenFrequency = combinedTokenFrequency.get(original);
             combinedResult.addFrequency(original, tokenFrequency == null ? 0 : tokenFrequency);
             if (++numberAdded == numSug) {

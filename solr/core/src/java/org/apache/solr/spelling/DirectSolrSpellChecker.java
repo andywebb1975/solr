@@ -232,7 +232,7 @@ public class DirectSolrSpellChecker extends SolrSpellChecker {
         for (SuggestWord suggestion : suggestions) {
           // there's nowhere to record the score :-(
           log.debug("token: {}, suggestion: {}", token.toString(), suggestion.toString());
-          result.add(token, suggestion.string, suggestion.freq);
+          result.add(token, suggestion);
         }
       }
     }
