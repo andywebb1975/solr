@@ -91,7 +91,7 @@ public class FileBasedSpellCheckerTest extends SolrTestCaseJ4 {
               assertEquals(
                   entry.getValue() + " does not equal: " + SpellingResult.NO_FREQUENCY_INFO,
                   SpellingResult.NO_FREQUENCY_INFO,
-                  (int) entry.getValue().freq);
+                  entry.getValue().freq);
 
               spellOpts.tokens = queryConverter.convert("super");
               result = checker.getSuggestions(spellOpts);
@@ -147,7 +147,7 @@ public class FileBasedSpellCheckerTest extends SolrTestCaseJ4 {
               assertEquals(
                   entry.getValue() + " does not equal: " + SpellingResult.NO_FREQUENCY_INFO,
                   SpellingResult.NO_FREQUENCY_INFO,
-                  (int) entry.getValue().freq);
+                  entry.getValue().freq);
 
               // test something not in the spell checker
               spellOpts.tokens = queryConverter.convert("super");
@@ -197,7 +197,7 @@ public class FileBasedSpellCheckerTest extends SolrTestCaseJ4 {
               assertEquals(
                   entry.getValue() + " does not equal: " + SpellingResult.NO_FREQUENCY_INFO,
                   SpellingResult.NO_FREQUENCY_INFO,
-                  (int) entry.getValue().freq);
+                  entry.getValue().freq);
 
               spellOpts.tokens = queryConverter.convert("super");
               result = checker.getSuggestions(spellOpts);
