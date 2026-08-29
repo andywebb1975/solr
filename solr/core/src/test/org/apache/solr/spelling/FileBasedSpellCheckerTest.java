@@ -21,6 +21,8 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.lucene.search.spell.SuggestWord;
 import org.apache.lucene.tests.util.LuceneTestCase;
 import org.apache.lucene.tests.util.LuceneTestCase.SuppressTempFileChecks;
 import org.apache.solr.SolrTestCaseJ4;
@@ -83,13 +85,13 @@ public class FileBasedSpellCheckerTest extends SolrTestCaseJ4 {
               SpellingOptions spellOpts = new SpellingOptions(tokens, searcher.getIndexReader());
               SpellingResult result = checker.getSuggestions(spellOpts);
               assertNotNull("result shouldn't be null", result);
-              Map<String, Integer> suggestions = result.get(spellOpts.tokens.iterator().next());
-              Map.Entry<String, Integer> entry = suggestions.entrySet().iterator().next();
+              Map<String, SuggestWord> suggestions = result.get(spellOpts.tokens.iterator().next());
+              Map.Entry<String, SuggestWord> entry = suggestions.entrySet().iterator().next();
               assertEquals(entry.getKey() + " is not equal to " + "foo", "foo", entry.getKey());
               assertEquals(
                   entry.getValue() + " does not equal: " + SpellingResult.NO_FREQUENCY_INFO,
                   SpellingResult.NO_FREQUENCY_INFO,
-                  (int) entry.getValue());
+                  (int) entry.getValue().freq);
 
               spellOpts.tokens = queryConverter.convert("super");
               result = checker.getSuggestions(spellOpts);
@@ -135,17 +137,17 @@ public class FileBasedSpellCheckerTest extends SolrTestCaseJ4 {
               SpellingResult result = checker.getSuggestions(spellOpts);
               assertNotNull("result is null and it shouldn't be", result);
               // should be lowercased, b/c we are using a lowercasing analyzer
-              Map<String, Integer> suggestions = result.get(spellOpts.tokens.iterator().next());
+              Map<String, SuggestWord> suggestions = result.get(spellOpts.tokens.iterator().next());
               assertEquals(
                   "suggestions Size: " + suggestions.size() + " is not: " + 1,
                   1,
                   suggestions.size());
-              Map.Entry<String, Integer> entry = suggestions.entrySet().iterator().next();
+              Map.Entry<String, SuggestWord> entry = suggestions.entrySet().iterator().next();
               assertEquals(entry.getKey() + " is not equal to " + "solr", "solr", entry.getKey());
               assertEquals(
                   entry.getValue() + " does not equal: " + SpellingResult.NO_FREQUENCY_INFO,
                   SpellingResult.NO_FREQUENCY_INFO,
-                  (int) entry.getValue());
+                  (int) entry.getValue().freq);
 
               // test something not in the spell checker
               spellOpts.tokens = queryConverter.convert("super");
@@ -185,17 +187,17 @@ public class FileBasedSpellCheckerTest extends SolrTestCaseJ4 {
               SpellingResult result = checker.getSuggestions(spellOpts);
               assertNotNull("result shouldn't be null", result);
               // should be lowercased, b/c we are using a lowercasing analyzer
-              Map<String, Integer> suggestions = result.get(spellOpts.tokens.iterator().next());
+              Map<String, SuggestWord> suggestions = result.get(spellOpts.tokens.iterator().next());
               assertEquals(
                   "suggestions Size: " + suggestions.size() + " is not: " + 1,
                   1,
                   suggestions.size());
-              Map.Entry<String, Integer> entry = suggestions.entrySet().iterator().next();
+              Map.Entry<String, SuggestWord> entry = suggestions.entrySet().iterator().next();
               assertEquals(entry.getKey() + " is not equal to " + "solr", "solr", entry.getKey());
               assertEquals(
                   entry.getValue() + " does not equal: " + SpellingResult.NO_FREQUENCY_INFO,
                   SpellingResult.NO_FREQUENCY_INFO,
-                  (int) entry.getValue());
+                  (int) entry.getValue().freq);
 
               spellOpts.tokens = queryConverter.convert("super");
               result = checker.getSuggestions(spellOpts);
