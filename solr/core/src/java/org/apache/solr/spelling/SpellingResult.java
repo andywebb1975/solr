@@ -95,11 +95,7 @@ public class SpellingResult {
       map = new LinkedHashMap<>();
       this.suggestions.put(token, map);
     }
-    SuggestWord suggestWord = new SuggestWord();
-    suggestWord.string = suggestion.string;
-    suggestWord.freq = suggestion.freq;
-    suggestWord.score = NO_SCORE_INFO;
-    map.put(suggestion.string, suggestWord);
+    map.put(suggestion.string, suggestion);
   }
 
   /**
