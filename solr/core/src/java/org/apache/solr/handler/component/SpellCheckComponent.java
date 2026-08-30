@@ -691,8 +691,8 @@ public class SpellCheckComponent extends SearchComponent implements SolrCoreAwar
         //
         // Logical structure of the extended results:
         // "suggestion":[
-        // {"word":"alt1","freq":7},
-        // {"word":"alt2","freq":4}
+        // {"word":"alt1","freq":7,"score":0.6},
+        // {"word":"alt2","freq":4,"score":0.75}
         // ]
         if (extendedResults && hasFreqInfo) {
           suggestionList.add("origFreq", spellingResult.getTokenFrequency(inputToken));
