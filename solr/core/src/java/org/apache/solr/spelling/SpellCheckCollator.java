@@ -48,6 +48,7 @@ public class SpellCheckCollator {
   private int maxCollationEvaluations = 10000;
   private boolean suggestionsMayOverlap = false;
   private int docCollectionLimit = 0;
+  private boolean getAllCollations = false;
 
   public List<SpellCheckCollation> collate(
       SpellingResult result, String originalQuery, ResponseBuilder ultimateResponse) {
@@ -178,7 +179,7 @@ public class SpellCheckCollator {
           checkResponse.req.close();
         }
       }
-      if (hits > 0 || !verifyCandidateWithQuery) {
+      if (hits > 0 || !verifyCandidateWithQuery || getAllCollations) {
         collNo++;
         SpellCheckCollation collation = new SpellCheckCollation();
         collation.setCollationQuery(collationQueryStr);
@@ -284,4 +285,10 @@ public class SpellCheckCollator {
     this.docCollectionLimit = docCollectionLimit;
     return this;
   }
+
+  public SpellCheckCollator setGetAllCollations(boolean getAllCollations) {
+    this.getAllCollations = getAllCollations;
+    return this;
+  }
+
 }

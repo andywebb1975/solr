@@ -164,4 +164,10 @@ public interface SpellingParams {
 
   /** Certain spelling implementations may allow for an accuracy setting. */
   String SPELLCHECK_ACCURACY = SPELLCHECK_PREFIX + "accuracy";
+
+  /**
+   * Return all collations, even if they have zero hits.
+   */
+  String SPELLCHECK_COLLATE_GET_ALL_COLLATIONS =
+      SPELLCHECK_PREFIX + "collateGetAllCollations";
 }

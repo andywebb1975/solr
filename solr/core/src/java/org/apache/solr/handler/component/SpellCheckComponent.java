@@ -307,6 +307,7 @@ public class SpellCheckComponent extends SearchComponent implements SolrCoreAwar
     int maxCollationEvaluations = params.getInt(SPELLCHECK_MAX_COLLATION_EVALUATIONS, 10000);
     boolean collationExtendedResults = params.getBool(SPELLCHECK_COLLATE_EXTENDED_RESULTS, false);
     int maxCollationCollectDocs = params.getInt(SPELLCHECK_COLLATE_MAX_COLLECT_DOCS, 0);
+    boolean collationGetAllCollations = params.getBool(SPELLCHECK_COLLATE_GET_ALL_COLLATIONS, false);
     // If not reporting hits counts, don't bother collecting more than 1 document per try.
     if (!collationExtendedResults) {
       maxCollationCollectDocs = 1;
@@ -318,7 +319,8 @@ public class SpellCheckComponent extends SearchComponent implements SolrCoreAwar
             .setMaxCollationTries(maxCollationTries)
             .setMaxCollationEvaluations(maxCollationEvaluations)
             .setSuggestionsMayOverlap(suggestionsMayOverlap)
-            .setDocCollectionLimit(maxCollationCollectDocs);
+            .setDocCollectionLimit(maxCollationCollectDocs)
+            .setGetAllCollations(collationGetAllCollations);
     List<SpellCheckCollation> collations = collator.collate(spellingResult, q, rb);
     // by sorting here we guarantee a non-distributed request returns all
     // results in the same order as a distributed request would,
