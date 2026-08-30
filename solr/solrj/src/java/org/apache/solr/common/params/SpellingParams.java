@@ -189,4 +189,10 @@ public interface SpellingParams {
    */
   public static final String SPELLCHECK_COLLATE_SORT_MAXSCORE =
           SPELLCHECK_PREFIX + "collateSortMaxScore";
+
+  /**
+   * Return all collations, even if they have zero hits.
+   */
+  public static final String SPELLCHECK_COLLATE_GET_ALL_COLLATIONS =
+      SPELLCHECK_PREFIX + "collateGetAllCollations";
 }

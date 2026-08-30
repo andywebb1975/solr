@@ -309,6 +309,7 @@ public class SpellCheckComponent extends SearchComponent implements SolrCoreAwar
     int maxCollationCollectDocs = params.getInt(SPELLCHECK_COLLATE_MAX_COLLECT_DOCS, 0);
     boolean collationGetMaxScore = params.getBool(SPELLCHECK_COLLATE_GET_MAXSCORE, false);
     String collationSortMaxScore = params.get(SPELLCHECK_COLLATE_SORT_MAXSCORE);
+    boolean collationGetAllCollations = params.getBool(SPELLCHECK_COLLATE_GET_ALL_COLLATIONS, false);
     // If not reporting hits counts, don't bother collecting more than 1 document per try.
     if (!collationExtendedResults) {
       maxCollationCollectDocs = 1;
@@ -322,7 +323,8 @@ public class SpellCheckComponent extends SearchComponent implements SolrCoreAwar
             .setSuggestionsMayOverlap(suggestionsMayOverlap)
             .setDocCollectionLimit(maxCollationCollectDocs)
             .setGetMaxScore(collationGetMaxScore)
-            .setSortMaxScore(collationSortMaxScore);
+            .setSortMaxScore(collationSortMaxScore)
+            .setGetAllCollations(collationGetAllCollations);
     List<SpellCheckCollation> collations = collator.collate(spellingResult, q, rb);
     // by sorting here we guarantee a non-distributed request returns all
     // results in the same order as a distributed request would,
@@ -414,7 +416,6 @@ public class SpellCheckComponent extends SearchComponent implements SolrCoreAwar
     int count = rb.req.getParams().getInt(SPELLCHECK_COUNT, 1);
     int numSug = Math.max(count, AbstractLuceneSpellChecker.DEFAULT_SUGGESTION_COUNT);
     boolean collationGetMaxScore = params.getBool(SPELLCHECK_COLLATE_GET_MAXSCORE, false);
-
     String origQuery = params.get(SPELLCHECK_Q);
     if (origQuery == null) {
       origQuery = rb.getQueryString();
