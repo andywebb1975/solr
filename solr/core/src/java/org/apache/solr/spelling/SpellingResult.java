@@ -34,7 +34,7 @@ public class SpellingResult {
   /** Key == token Value = Map -> key is the suggestion, value is a SuggestWord */
   private Map<Token, LinkedHashMap<String, SuggestWord>> suggestions = new LinkedHashMap<>();
 
-  private Map<Token, Integer> tokenFrequency;
+  private Map<Token, Integer> tokenFrequencies;
   public static final int NO_FREQUENCY_INFO = -1;
   public static final float NO_SCORE_INFO = -1f;
 
@@ -51,17 +51,17 @@ public class SpellingResult {
    * @param suggestions The suggestions
    */
   public void add(Token token, List<String> suggestions) {
-    LinkedHashMap<String, SuggestWord> map = this.suggestions.get(token);
-    if (map == null) {
-      map = new LinkedHashMap<>();
-      this.suggestions.put(token, map);
+    LinkedHashMap<String, SuggestWord> tokenSuggestWords = this.suggestions.get(token);
+    if (tokenSuggestWords == null) {
+      tokenSuggestWords = new LinkedHashMap<>();
+      this.suggestions.put(token, tokenSuggestWords);
     }
     for (String suggestion : suggestions) {
       SuggestWord suggestWord = new SuggestWord();
       suggestWord.string = suggestion;
       suggestWord.freq = NO_FREQUENCY_INFO;
       suggestWord.score = NO_SCORE_INFO;
-      map.put(suggestion, suggestWord);
+      tokenSuggestWords.put(suggestion, suggestWord);
     }
   }
 
@@ -72,10 +72,10 @@ public class SpellingResult {
    * @param docFreq original token's document frequency
    */
   public void addFrequency(Token token, int docFreq) {
-    if (tokenFrequency == null) {
-      tokenFrequency = new LinkedHashMap<>();
+    if (tokenFrequencies == null) {
+      tokenFrequencies = new LinkedHashMap<>();
     }
-    tokenFrequency.put(token, docFreq);
+    tokenFrequencies.put(token, docFreq);
   }
 
   /**
@@ -85,13 +85,13 @@ public class SpellingResult {
    * @param suggestion The suggestion for the Token as a {@link SuggestWord} instance
    */
   public void add(Token token, SuggestWord suggestion) {
-    LinkedHashMap<String, SuggestWord> map = this.suggestions.get(token);
+    LinkedHashMap<String, SuggestWord> tokenSuggestWords = this.suggestions.get(token);
     // Don't bother adding if we already have this token
-    if (map == null) {
-      map = new LinkedHashMap<>();
-      this.suggestions.put(token, map);
+    if (tokenSuggestWords == null) {
+      tokenSuggestWords = new LinkedHashMap<>();
+      this.suggestions.put(token, tokenSuggestWords);
     }
-    map.put(suggestion.string, suggestion);
+    tokenSuggestWords.put(suggestion.string, suggestion);
   }
 
   /**
@@ -114,11 +114,11 @@ public class SpellingResult {
    * @return The frequency or null
    */
   public Integer getTokenFrequency(Token token) {
-    return tokenFrequency.get(token);
+    return tokenFrequencies.get(token);
   }
 
   public boolean hasTokenFrequencyInfo() {
-    return tokenFrequency != null && !tokenFrequency.isEmpty();
+    return tokenFrequencies != null && !tokenFrequencies.isEmpty();
   }
 
   /**
@@ -131,8 +131,8 @@ public class SpellingResult {
     return suggestions;
   }
 
-  public Map<Token, Integer> getTokenFrequency() {
-    return tokenFrequency;
+  public Map<Token, Integer> getTokenFrequencies() {
+    return tokenFrequencies;
   }
 
   /**
