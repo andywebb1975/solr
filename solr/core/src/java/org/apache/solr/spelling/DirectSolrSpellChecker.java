@@ -256,7 +256,7 @@ public class DirectSolrSpellChecker extends SolrSpellChecker {
         if (1.0F <= checker.getMaxQueryFrequency()) {
           // absolute maxQueryFreq threshold
           if (checker.getMaxQueryFrequency() < mergeData.origVsFreq.get(original)) {
-            // one or more shards thought the word needed suggestions because it's
+            // one or more shards thought the word needed suggestions because its
             // (per-shard) origFreq was too low, but the aggregate sum of origFreq
             // is above our threshold, so ignore those suggestions.
             mergeData.removeOriginal(original);
@@ -267,10 +267,10 @@ public class DirectSolrSpellChecker extends SolrSpellChecker {
           // This situation is also problematic, but in the reverse situation of
           // the absolute maxQueryFreq threshold.
           //
-          // An individual shard may have found that it's (per-shard) origFreq
+          // An individual shard may have found that its (per-shard) origFreq
           // was higher then the computed max for that shard (relative to the
           // per-shard maxDoc) and said it's "correctlySpelled" even though
-          // it's cumulative origFreq may not meet the computed max across the
+          // its cumulative origFreq may not meet the computed max across the
           // entire collection.
           //
           // But we don't have a straightforward way to determine that, so for
