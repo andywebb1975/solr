@@ -677,6 +677,7 @@ public class SpellCheckComponent extends SearchComponent implements SolrCoreAwar
       Token inputToken = entry.getKey();
       String tokenString = new String(inputToken.buffer(), 0, inputToken.length());
       Map<String, SuggestWord> theSuggestions = new LinkedHashMap<>(entry.getValue());
+      // this hides the original token from the suggestions, if it is present. TODO Why?
       theSuggestions.keySet().removeIf(sug -> sug.equals(tokenString));
       if (theSuggestions.size() > 0) {
         hasSuggestions = true;
