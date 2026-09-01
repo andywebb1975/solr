@@ -96,6 +96,10 @@ public class SpellCheckCollator {
             maxNumberToIterate,
             maxCollationEvaluations,
             suggestionsMayOverlap);
+
+    // this loop will terminate when we have either tried enough possibilities or have enough collations
+    // but it stop getAllCollations returning them all if we hit maxTries before maxCollations
+    // - what can cause that other than setting maxTries<maxCollations?
     while (tryNo < maxTries && collNo < maxCollations && possibilityIter.hasNext()) {
 
       if (queryLimits.maybeExitWithPartialResults("SpellCheck collator")) {
@@ -192,6 +196,8 @@ public class SpellCheckCollator {
           checkResponse.req.close();
         }
       }
+
+      // NB getAllCollations will still omit ones that weren't tried due to reaching maxCollationTries
       if (hits > 0 || !verifyCandidateWithQuery || getAllCollations) {
         collNo++;
         SpellCheckCollation collation = new SpellCheckCollation();

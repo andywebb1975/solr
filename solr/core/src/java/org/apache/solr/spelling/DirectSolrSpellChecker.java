@@ -210,6 +210,13 @@ public class DirectSolrSpellChecker extends SolrSpellChecker {
       if (options.alternativeTermCount > 0 && freq > 0) {
         boolean foundOriginal = false;
         SuggestWord[] suggestionsWithOrig = new SuggestWord[suggestions.length + 1];
+
+        // suggestionsWithOrig may replace suggestions; if it does it'll have original
+        // text as entry 0, others are shifted up by 1.
+
+        // If the original text is already in suggestions, then suggestions isn't replaced
+        // and suggestionsWithOrig is not used.
+
         for (int i = 0; i < suggestions.length; i++) {
           if (suggestions[i].string.equals(tokenText)) {
             foundOriginal = true;
@@ -221,6 +228,8 @@ public class DirectSolrSpellChecker extends SolrSpellChecker {
           SuggestWord orig = new SuggestWord();
           orig.freq = freq;
           orig.string = tokenText;
+          // token won't be reported by SpellCheckComponent anyway as it has same text as original
+          // orig.score = 1.0f; // original is same as this suggestion
           suggestionsWithOrig[0] = orig;
           suggestions = suggestionsWithOrig;
         }
@@ -230,7 +239,6 @@ public class DirectSolrSpellChecker extends SolrSpellChecker {
         result.add(token, empty);
       } else {
         for (SuggestWord suggestion : suggestions) {
-          // this is seen in log, suggestions have scores at this point
           log.debug("token: {}, suggestion: {}", token.toString(), suggestion.toString());
           result.add(token, suggestion);
         }
