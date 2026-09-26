@@ -197,9 +197,9 @@ public class SpellCheckCollator {
         }
       }
 
-      // NB getAllCollations will still omit ones that weren't tried due to reaching maxCollationTries
       if (hits > 0 || !verifyCandidateWithQuery || getAllCollations) {
-        collNo++;
+        // when getAllCollations is set collNo may be lower than the actual number of collations returned, but we still need to honour maxCollations
+        if (hits > 0 || !verifyCandidateWithQuery) collNo++;
         SpellCheckCollation collation = new SpellCheckCollation();
         collation.setCollationQuery(collationQueryStr);
         collation.setHits(hits);
