@@ -307,6 +307,9 @@ public class SpellCheckComponent extends SearchComponent implements SolrCoreAwar
     int maxCollationEvaluations = params.getInt(SPELLCHECK_MAX_COLLATION_EVALUATIONS, 10000);
     boolean collationExtendedResults = params.getBool(SPELLCHECK_COLLATE_EXTENDED_RESULTS, false);
     int maxCollationCollectDocs = params.getInt(SPELLCHECK_COLLATE_MAX_COLLECT_DOCS, 0);
+    boolean collationGetMaxScore = params.getBool(SPELLCHECK_COLLATE_GET_MAXSCORE, false);
+    String collationSortMaxScore = params.get(SPELLCHECK_COLLATE_SORT_MAXSCORE);
+    boolean collationGetAllCollations = params.getBool(SPELLCHECK_COLLATE_GET_ALL_COLLATIONS, false);
     // If not reporting hits counts, don't bother collecting more than 1 document per try.
     if (!collationExtendedResults) {
       maxCollationCollectDocs = 1;
@@ -318,7 +321,10 @@ public class SpellCheckComponent extends SearchComponent implements SolrCoreAwar
             .setMaxCollationTries(maxCollationTries)
             .setMaxCollationEvaluations(maxCollationEvaluations)
             .setSuggestionsMayOverlap(suggestionsMayOverlap)
-            .setDocCollectionLimit(maxCollationCollectDocs);
+            .setDocCollectionLimit(maxCollationCollectDocs)
+            .setGetMaxScore(collationGetMaxScore)
+            .setSortMaxScore(collationSortMaxScore)
+            .setGetAllCollations(collationGetAllCollations);
     List<SpellCheckCollation> collations = collator.collate(spellingResult, q, rb);
     // by sorting here we guarantee a non-distributed request returns all
     // results in the same order as a distributed request would,
@@ -331,8 +337,9 @@ public class SpellCheckComponent extends SearchComponent implements SolrCoreAwar
         NamedList<Object> extendedResult = new SimpleOrderedMap<>();
         extendedResult.add("collationQuery", collation.getCollationQuery());
         extendedResult.add("hits", collation.getHits());
+        if (collationGetMaxScore) extendedResult.add("collationMaxScore", collation.getMaxScore());
         extendedResult.add("misspellingsAndCorrections", collation.getMisspellingsAndCorrections());
-        if (maxCollationTries > 0 && shard) {
+        if ((maxCollationTries > 0 && shard) || collationGetMaxScore) {
           extendedResult.add("collationInternalRank", collation.getInternalRank());
         }
         collationList.add("collation", extendedResult);
@@ -408,7 +415,7 @@ public class SpellCheckComponent extends SearchComponent implements SolrCoreAwar
     Integer maxResultsForSuggest = maxResultsForSuggest(rb);
     int count = rb.req.getParams().getInt(SPELLCHECK_COUNT, 1);
     int numSug = Math.max(count, AbstractLuceneSpellChecker.DEFAULT_SUGGESTION_COUNT);
-
+    boolean collationGetMaxScore = params.getBool(SPELLCHECK_COLLATE_GET_MAXSCORE, false);
     String origQuery = params.get(SPELLCHECK_Q);
     if (origQuery == null) {
       origQuery = rb.getQueryString();
@@ -467,6 +474,10 @@ public class SpellCheckComponent extends SearchComponent implements SolrCoreAwar
           SimpleOrderedMap<Object> extendedResult = new SimpleOrderedMap<>();
           extendedResult.add("collationQuery", collation.getCollationQuery());
           extendedResult.add("hits", collation.getHits());
+          if (collationGetMaxScore) {
+            extendedResult.add("collationMaxScore", collation.getMaxScore());
+            extendedResult.add("collationInternalRank", collation.getInternalRank());
+          }
           extendedResult.add(
               "misspellingsAndCorrections", collation.getMisspellingsAndCorrections());
           collations.add("collation", extendedResult);
@@ -658,14 +669,15 @@ public class SpellCheckComponent extends SearchComponent implements SolrCoreAwar
       String origQuery,
       boolean extendedResults) {
     NamedList<Object> result = new NamedList<>();
-    Map<Token, LinkedHashMap<String, Integer>> suggestions = spellingResult.getSuggestions();
+    Map<Token, LinkedHashMap<String, SuggestWord>> suggestions = spellingResult.getSuggestions();
     boolean hasFreqInfo = spellingResult.hasTokenFrequencyInfo();
     boolean hasSuggestions = false;
     boolean hasZeroFrequencyToken = false;
-    for (Map.Entry<Token, LinkedHashMap<String, Integer>> entry : suggestions.entrySet()) {
+    for (Map.Entry<Token, LinkedHashMap<String, SuggestWord>> entry : suggestions.entrySet()) {
       Token inputToken = entry.getKey();
       String tokenString = new String(inputToken.buffer(), 0, inputToken.length());
-      Map<String, Integer> theSuggestions = new LinkedHashMap<>(entry.getValue());
+      Map<String, SuggestWord> theSuggestions = new LinkedHashMap<>(entry.getValue());
+      // this hides the original token from the suggestions, if it is present. TODO Why?
       theSuggestions.keySet().removeIf(sug -> sug.equals(tokenString));
       if (theSuggestions.size() > 0) {
         hasSuggestions = true;
@@ -681,18 +693,19 @@ public class SpellCheckComponent extends SearchComponent implements SolrCoreAwar
         //
         // Logical structure of the extended results:
         // "suggestion":[
-        // {"word":"alt1","freq":7},
-        // {"word":"alt2","freq":4}
+        // {"word":"alt1","freq":7,"score":0.6},
+        // {"word":"alt2","freq":4,"score":0.75}
         // ]
         if (extendedResults && hasFreqInfo) {
           suggestionList.add("origFreq", spellingResult.getTokenFrequency(inputToken));
 
           ArrayList<SimpleOrderedMap<Object>> sugs = new ArrayList<>();
           suggestionList.add("suggestion", sugs);
-          for (Map.Entry<String, Integer> suggEntry : theSuggestions.entrySet()) {
+          for (Map.Entry<String, SuggestWord> suggEntry : theSuggestions.entrySet()) {
             SimpleOrderedMap<Object> sugEntry = new SimpleOrderedMap<>();
             sugEntry.add("word", suggEntry.getKey());
-            sugEntry.add("freq", suggEntry.getValue());
+            sugEntry.add("freq", suggEntry.getValue().freq);
+            sugEntry.add("score", suggEntry.getValue().score);
             sugs.add(sugEntry);
           }
         } else {

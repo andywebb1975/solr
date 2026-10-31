@@ -48,6 +48,9 @@ public class SpellCheckCollator {
   private int maxCollationEvaluations = 10000;
   private boolean suggestionsMayOverlap = false;
   private int docCollectionLimit = 0;
+  private boolean getMaxScore = false;
+  private String sortMaxScore;
+  private boolean getAllCollations = false;
 
   public List<SpellCheckCollation> collate(
       SpellingResult result, String originalQuery, ResponseBuilder ultimateResponse) {
@@ -93,6 +96,8 @@ public class SpellCheckCollator {
             maxNumberToIterate,
             maxCollationEvaluations,
             suggestionsMayOverlap);
+
+    // this loop will terminate when we have either tried enough possibilities or have enough collations
     while (tryNo < maxTries && collNo < maxCollations && possibilityIter.hasNext()) {
 
       if (queryLimits.maybeExitWithPartialResults("SpellCheck collator")) {
@@ -102,6 +107,7 @@ public class SpellCheckCollator {
       PossibilityIterator.RankedSpellPossibility possibility = possibilityIter.next();
       String collationQueryStr = getCollation(originalQuery, possibility.corrections);
       long hits = 0;
+      float maxScore = 0;
 
       if (verifyCandidateWithQuery) {
         tryNo++;
@@ -127,13 +133,22 @@ public class SpellCheckCollator {
         if (docCollectionLimit > 0) {
           params.set(CommonParams.MAX_HITS_ALLOWED, docCollectionLimit);
         }
-        // we don't want any stored fields
-        params.set(CommonParams.FL, ID);
-        // we'll sort by doc id to ensure no scoring is done.
-        params.set(CommonParams.SORT, "_docid_ asc");
+        if (getMaxScore) {
+          // we don't need any stored fields, but score is needed for maxScore to show up
+          params.set(CommonParams.FL, ID + ",score");
+          params.set(CommonParams.SORT, "score desc");
+          // TODO write tests for this path
+        } else {
+          // we don't want any stored fields
+          params.set(CommonParams.FL, ID);
+          // we'll sort by doc id to ensure no scoring is done.
+          params.set(CommonParams.SORT, "_docid_ asc");
+        }
         // CursorMark does not like _docid_ sorting, and we don't need it.
         params.remove(CursorMarkParams.CURSOR_MARK_PARAM);
         // If a dismax query, don't add unnecessary clauses for scoring
+        // NB edismax boost isn't removed - presumably this code predates that.
+        // This means it can still be used to influence the maxScore, which is helpful.
         params.remove(DisMaxParams.TIE);
         params.remove(DisMaxParams.PF);
         params.remove(DisMaxParams.PF2);
@@ -170,6 +185,7 @@ public class SpellCheckCollator {
                               SolrQueryResponse.RESPONSE_HEADER_APPROXIMATE_TOTAL_HITS_KEY,
                               checkResponse.rsp.getToLog().get("hits")))
                   .longValue();
+          if (getMaxScore) maxScore = checkResponse.getResults().docList.maxScore();
         } catch (Exception e) {
           log.warn(
               "Exception trying to re-query to check if a spell check possibility would return any hits.",
@@ -178,11 +194,17 @@ public class SpellCheckCollator {
           checkResponse.req.close();
         }
       }
-      if (hits > 0 || !verifyCandidateWithQuery) {
-        collNo++;
+
+      if (hits > 0 || !verifyCandidateWithQuery || getAllCollations) {
+        // when getAllCollations is set collNo may be lower than the actual number of collations returned, but we still need to honour maxCollations
+        if (hits > 0 || !verifyCandidateWithQuery) collNo++;
         SpellCheckCollation collation = new SpellCheckCollation();
         collation.setCollationQuery(collationQueryStr);
         collation.setHits(hits);
+        if (getMaxScore) {
+          collation.setMaxScore(maxScore);
+          collation.setSortMaxScore(sortMaxScore);
+        }
         collation.setInternalRank(
             suggestionsMayOverlap
                 ? ((possibility.rank * 1000) + possibility.index)
@@ -282,6 +304,21 @@ public class SpellCheckCollator {
 
   public SpellCheckCollator setDocCollectionLimit(int docCollectionLimit) {
     this.docCollectionLimit = docCollectionLimit;
+    return this;
+  }
+
+  public SpellCheckCollator setGetMaxScore(boolean getMaxScore) {
+    this.getMaxScore = getMaxScore;
+    return this;
+  }
+
+  public SpellCheckCollator setSortMaxScore(String sortMaxScore) {
+    this.sortMaxScore = sortMaxScore;
+    return this;
+  }
+
+  public SpellCheckCollator setGetAllCollations(boolean getAllCollations) {
+    this.getAllCollations = getAllCollations;
     return this;
   }
 }
