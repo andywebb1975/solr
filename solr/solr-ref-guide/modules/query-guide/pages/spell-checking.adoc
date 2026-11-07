@@ -91,8 +91,10 @@ If the `distanceMeasure` is not specified, Solr will use the Levenshtein metric 
 When `comparatorClass` is configured as "score", the suggestions with lower distance (i.e., higher similarity) scores are considered more relevant.
 The alternative value is "freq" - this prioritizes suggestions with higher document frequency.
 
-The `accuracy` setting defines the threshold for a valid suggestion, and the `thresholdTokenFrequency` setting allows
-skipping suggestions which have low document frequency in the index.
+The `accuracy` setting defines the distance score threshold for a valid suggestion.
+This may be overridden by the `spellcheck.accuracy` parameter at query time. Scores are not visible in responses, unlike with DirectSolrSpellChecker. 
+
+The `thresholdTokenFrequency` setting allows skipping suggestions which have low document frequency in the index.
 
 Finally, `buildOnCommit` and `buildOnOptimize` define whether to build the spellcheck index at every commit (that is, every time new documents are added to the index)
 or at every optimize request.
@@ -138,8 +140,13 @@ The `distanceMeasure` defines the metric to use during the spellcheck query - th
 which corresponds to the Damerau-Levenshtein metric.
 
 Because this spellchecker is querying the main index, you may want to limit how often it queries the index to be sure to avoid any performance conflicts with user queries.
-The `accuracy` setting defines the threshold for a valid suggestion, while `maxEdits` defines the number of changes to the term to allow.
-Since most spelling mistakes are only 1 letter off, setting this to 1 will reduce the number of possible suggestions (the default, however, is 2); the value can only be 1 or 2.
+
+The `accuracy` setting defines the distance score threshold for a valid suggestion.
+This may be overridden at query time using `spellcheck.accuracy`, and suggestion scores may be seen by enabling `spellcheck.extendedResults`.
+
+`maxEdits` defines the number of changes to the term to allow.
+Since most spelling mistakes are only 1 letter off, setting `maxEdits` to 1 will reduce the number of possible suggestions (the default, however, is 2); the value can only be 1 or 2.
+
 `minPrefix` defines the minimum number of characters the terms should share.
 Setting this to 1 means that the spelling suggestions will all start with the same letter, for example.
 
@@ -397,8 +404,8 @@ Also, setting this value enables context-sensitive spell suggestions.
 |Optional |Default: `false`
 |===
 +
-If `true`, this parameter causes to Solr to return additional information about spellcheck results, such as the frequency of each original term in the index (`origFreq`) as well as the frequency of each suggestion in the index (`frequency`).
-Note that this result format differs from the non-extended one as the returned suggestion for a word is actually an array of lists, where each list holds the suggested term and its frequency.
+If `true`, this parameter causes Solr to return additional information about spellcheck results, such as the frequency of each original term in the index (`origFreq`) as well as the distance score (when using DirectSolrSpellChecker) and frequency in the index of each suggestion.
+Note that this result format differs from the non-extended one as the returned suggestion for a word is actually an array of lists, where each list holds the suggested term, its score and frequency.
 
 `spellcheck.collate`::
 +
@@ -503,6 +510,7 @@ This parameter can be used to invoke a specific spellchecker on a per-request ba
 Specifies an accuracy value to be used by the spell checking implementation to decide whether a result is worthwhile or not.
 The value is a float between 0 and 1.
 Defaults to `Float.MIN_VALUE`.
+This overrides the `accuracy` setting specified in the component configuration. 
 
 `spellcheck.<DICT_NAME>.key`::
 +

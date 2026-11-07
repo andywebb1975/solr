@@ -25,6 +25,8 @@ import java.util.regex.Pattern;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.spell.CombineSuggestion;
+import org.apache.lucene.search.spell.LevenshteinDistance;
+import org.apache.lucene.search.spell.StringDistance;
 import org.apache.lucene.search.spell.SuggestWord;
 import org.apache.lucene.search.spell.WordBreakSpellChecker;
 import org.apache.lucene.search.spell.WordBreakSpellChecker.BreakSuggestionSortMethod;
@@ -77,12 +79,16 @@ public class WordBreakSolrSpellChecker extends SolrSpellChecker {
     SUM_FREQ
   };
 
+  public static final String STRING_DISTANCE = "distanceMeasure";
+
   private WordBreakSpellChecker wbsp = null;
   private boolean combineWords = false;
   private boolean breakWords = false;
   private BreakSuggestionSortMethod sortMethod =
       BreakSuggestionSortMethod.NUM_CHANGES_THEN_MAX_FREQUENCY;
   private static final Pattern spacePattern = Pattern.compile("\\s+");
+
+  protected StringDistance sd;
 
   @Override
   public String init(NamedList<?> config, SolrCore core) {
@@ -123,6 +129,11 @@ public class WordBreakSolrSpellChecker extends SolrSpellChecker {
     int msf = intParam(config, PARAM_MIN_SUGGESTION_FREQUENCY);
     if (msf > 0) {
       wbsp.setMinSuggestionFrequency(msf);
+    }
+    String strDistanceName = (String) config.get(STRING_DISTANCE);
+    if (strDistanceName != null) {
+    } else {
+      sd = new LevenshteinDistance();
     }
     return name;
   }
@@ -324,7 +335,12 @@ public class WordBreakSolrSpellChecker extends SolrSpellChecker {
       result.add(token, List.of());
       result.addFrequency(token, tokenFrequency);
     } else {
-      result.add(token, suggestion, suggestionFrequency);
+      SuggestWord suggestWord = new SuggestWord();
+      suggestWord.string = suggestion;
+      suggestWord.freq = suggestionFrequency;
+      String tokenText = new String(token.buffer(), 0, token.length());
+      suggestWord.score = sd.getDistance(tokenText, suggestion);
+      result.add(token, suggestWord);
       result.addFrequency(token, tokenFrequency);
     }
   }

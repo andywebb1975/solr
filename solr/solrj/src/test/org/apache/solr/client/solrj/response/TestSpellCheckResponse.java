@@ -103,6 +103,9 @@ public class TestSpellCheckResponse extends SolrTestCase {
     assertEquals(
         sugs.get(0).getAlternatives().size(), sugs.get(0).getAlternativeFrequencies().size());
 
+    assertEquals(sug.getAlternatives().size(), sug.getAlternativeScores().size());
+    assertEquals(sugs.get(0).getAlternatives().size(), sugs.get(0).getAlternativeScores().size());
+
     assertEquals("samsung", sug.getAlternatives().get(0));
     assertEquals("samsung", sugs.get(0).getAlternatives().get(0));
 

@@ -84,8 +84,8 @@ public interface SpellingParams {
 
   /**
    * Whether to use the extended response format, which is more complicated but richer. Returns the
-   * document frequency for each suggestion and returns one suggestion block for each term in the
-   * query string. Default is false.
+   * score and document frequency for each suggestion and returns one suggestion block for each term
+   * in the query string. Default is false.
    *
    * <p><b>This is applicable only for dictionaries built from Solr fields.</b>
    */

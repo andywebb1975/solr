@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.apache.lucene.search.spell.SuggestWord;
 import org.apache.lucene.tests.util.LuceneTestCase.SuppressTempFileChecks;
 import org.apache.lucene.tests.util.TestUtil;
 import org.apache.solr.SolrTestCaseJ4;
@@ -758,6 +759,13 @@ public class SpellCheckCollatorTest extends SolrTestCaseJ4 {
     assertEquals(1, collations.size());
   }
 
+  private SuggestWord createSuggestWord(String string, int freq) {
+    SuggestWord suggestWord = new SuggestWord();
+    suggestWord.string = string;
+    suggestWord.freq = freq;
+    return suggestWord;
+  }
+
   @Test
   @SuppressWarnings("deprecation")
   public void testCollationWithQueryLimitsSupportsPartialResults() throws Exception {
@@ -765,21 +773,17 @@ public class SpellCheckCollatorTest extends SolrTestCaseJ4 {
     SpellingResult result = new SpellingResult();
 
     // Add tokens with multiple suggestions to generate many possible collations
-    Token token1 = new Token();
-    token1.copyBuffer("test".toCharArray(), 0, 4);
-    token1.setOffset(0, 4);
-    result.add(token1, "best", 1);
-    result.add(token1, "rest", 2);
-    result.add(token1, "nest", 3);
-    result.add(token1, "fest", 4);
+    Token token1 = new Token("test", 0, 4);
+    result.add(token1, createSuggestWord("best", 1));
+    result.add(token1, createSuggestWord("rest", 2));
+    result.add(token1, createSuggestWord("nest", 3));
+    result.add(token1, createSuggestWord("fest", 4));
 
-    Token token2 = new Token();
-    token2.copyBuffer("query".toCharArray(), 0, 5);
-    token2.setOffset(5, 10);
-    result.add(token2, "quarry", 1);
-    result.add(token2, "quiry", 2);
-    result.add(token2, "quary", 3);
-    result.add(token2, "querry", 4);
+    Token token2 = new Token("query", 5, 10);
+    result.add(token2, createSuggestWord("quarry", 1));
+    result.add(token2, createSuggestWord("quiry", 2));
+    result.add(token2, createSuggestWord("quary", 3));
+    result.add(token2, createSuggestWord("querry", 4));
 
     // Create a QueryLimit that will trigger during collation processing
     final int[] callCount = {0};
