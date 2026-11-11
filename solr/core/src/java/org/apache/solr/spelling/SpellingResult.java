@@ -36,7 +36,7 @@ public class SpellingResult {
   private Map<SpellCheckToken, LinkedHashMap<String, SuggestWord>> suggestions =
       new LinkedHashMap<>();
 
-  private Map<SpellCheckToken, Integer> tokenFrequency;
+  private Map<SpellCheckToken, Integer> tokenFrequencies;
   public static final int NO_FREQUENCY_INFO = -1;
   public static final float NO_SCORE_INFO = -1f;
 
@@ -70,10 +70,10 @@ public class SpellingResult {
    * @param docFreq original token's document frequency
    */
   public void addFrequency(SpellCheckToken token, int docFreq) {
-    if (tokenFrequency == null) {
-      tokenFrequency = new LinkedHashMap<>();
+    if (tokenFrequencies == null) {
+      tokenFrequencies = new LinkedHashMap<>();
     }
-    tokenFrequency.put(token, docFreq);
+    tokenFrequencies.put(token, docFreq);
   }
 
   /**
@@ -112,11 +112,11 @@ public class SpellingResult {
    * @return The frequency or null
    */
   public Integer getTokenFrequency(SpellCheckToken token) {
-    return tokenFrequency.get(token);
+    return tokenFrequencies.get(token);
   }
 
   public boolean hasTokenFrequencyInfo() {
-    return tokenFrequency != null && !tokenFrequency.isEmpty();
+    return tokenFrequencies != null && !tokenFrequencies.isEmpty();
   }
 
   /**
@@ -129,7 +129,7 @@ public class SpellingResult {
     return suggestions;
   }
 
-  public Map<SpellCheckToken, Integer> getTokenFrequency() {
-    return tokenFrequency;
+  public Map<SpellCheckToken, Integer> getTokenFrequencies() {
+    return tokenFrequencies;
   }
 }

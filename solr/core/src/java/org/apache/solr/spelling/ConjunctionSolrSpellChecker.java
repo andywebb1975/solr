@@ -136,8 +136,8 @@ public class ConjunctionSolrSpellChecker extends SolrSpellChecker {
     Map<SpellCheckToken, List<LinkedHashMap<String, SuggestWord>>> allSuggestions =
         new LinkedHashMap<>();
     for (SpellingResult result : results) {
-      if (result.getTokenFrequency() != null) {
-        combinedTokenFrequency.putAll(result.getTokenFrequency());
+      if (result.getTokenFrequencies() != null) {
+        combinedTokenFrequency.putAll(result.getTokenFrequencies());
       }
       for (Map.Entry<SpellCheckToken, LinkedHashMap<String, SuggestWord>> entry :
           result.getSuggestions().entrySet()) {

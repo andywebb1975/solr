@@ -72,7 +72,7 @@ public class PossibilityIterator implements Iterator<PossibilityIterator.RankedS
         SpellCheckCorrection correction = new SpellCheckCorrection();
         correction.setOriginal(token);
         correction.setCorrection(entry1.getKey());
-        correction.setNumberOfOccurences(entry1.getValue().freq);
+        correction.setNumberOfOccurrences(entry1.getValue().freq);
         possibleCorrections.add(correction);
       }
       possibilityList.add(possibleCorrections);
@@ -380,7 +380,7 @@ public class PossibilityIterator implements Iterator<PossibilityIterator.RankedS
               .append(">")
               .append(corr.getCorrection())
               .append(" (")
-              .append(corr.getNumberOfOccurences())
+              .append(corr.getNumberOfOccurrences())
               .append(")");
         }
       }
