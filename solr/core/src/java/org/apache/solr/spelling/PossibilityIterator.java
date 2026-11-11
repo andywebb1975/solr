@@ -28,6 +28,7 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.PriorityQueue;
 import java.util.Set;
+import org.apache.lucene.search.spell.SuggestWord;
 
 /**
  * Given a list of possible Spelling Corrections for multiple mis-spelled words in a query, This
@@ -55,23 +56,23 @@ public class PossibilityIterator implements Iterator<PossibilityIterator.RankedS
    * Possible Correction".
    */
   public PossibilityIterator(
-      Map<SpellCheckToken, LinkedHashMap<String, Integer>> suggestions,
+      Map<SpellCheckToken, LinkedHashMap<String, SuggestWord>> suggestions,
       int maximumRequiredSuggestions,
       int maxEvaluations,
       boolean overlap) {
     this.suggestionsMayOverlap = overlap;
-    for (Map.Entry<SpellCheckToken, LinkedHashMap<String, Integer>> entry :
+    for (Map.Entry<SpellCheckToken, LinkedHashMap<String, SuggestWord>> entry :
         suggestions.entrySet()) {
       SpellCheckToken token = entry.getKey();
       if (entry.getValue().size() == 0) {
         continue;
       }
       List<SpellCheckCorrection> possibleCorrections = new ArrayList<>();
-      for (Map.Entry<String, Integer> entry1 : entry.getValue().entrySet()) {
+      for (Map.Entry<String, SuggestWord> entry1 : entry.getValue().entrySet()) {
         SpellCheckCorrection correction = new SpellCheckCorrection();
         correction.setOriginal(token);
         correction.setCorrection(entry1.getKey());
-        correction.setNumberOfOccurences(entry1.getValue());
+        correction.setNumberOfOccurences(entry1.getValue().freq);
         possibleCorrections.add(correction);
       }
       possibilityList.add(possibleCorrections);

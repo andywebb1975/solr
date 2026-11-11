@@ -326,7 +326,11 @@ public class WordBreakSolrSpellChecker extends SolrSpellChecker {
       result.add(token, List.of());
       result.addFrequency(token, tokenFrequency);
     } else {
-      result.add(token, suggestion, suggestionFrequency);
+      SuggestWord suggestWord = new SuggestWord();
+      suggestWord.string = suggestion;
+      suggestWord.freq = suggestionFrequency;
+      // NB suggestWord.score is not set as this is not used by the algorithm
+      result.add(token, suggestWord);
       result.addFrequency(token, tokenFrequency);
     }
   }

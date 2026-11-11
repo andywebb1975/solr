@@ -19,6 +19,7 @@ package org.apache.solr.spelling;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import org.apache.lucene.search.spell.SuggestWord;
 
 /**
  * Implementations of SolrSpellChecker must return suggestions as SpellResult instance. This is
@@ -32,10 +33,12 @@ public class SpellingResult {
    * Key == token Value = Map -> key is the suggestion, value is the frequency of the token in the
    * collection
    */
-  private Map<SpellCheckToken, LinkedHashMap<String, Integer>> suggestions = new LinkedHashMap<>();
+  private Map<SpellCheckToken, LinkedHashMap<String, SuggestWord>> suggestions =
+      new LinkedHashMap<>();
 
   private Map<SpellCheckToken, Integer> tokenFrequency;
   public static final int NO_FREQUENCY_INFO = -1;
+  public static final float NO_SCORE_INFO = -1f;
 
   public SpellingResult() {}
 
@@ -46,13 +49,17 @@ public class SpellingResult {
    * @param suggestions The suggestions
    */
   public void add(SpellCheckToken token, List<String> suggestions) {
-    LinkedHashMap<String, Integer> map = this.suggestions.get(token);
+    LinkedHashMap<String, SuggestWord> map = this.suggestions.get(token);
     if (map == null) {
       map = new LinkedHashMap<>();
       this.suggestions.put(token, map);
     }
     for (String suggestion : suggestions) {
-      map.put(suggestion, NO_FREQUENCY_INFO);
+      SuggestWord suggestWord = new SuggestWord();
+      suggestWord.string = suggestion;
+      suggestWord.freq = NO_FREQUENCY_INFO;
+      suggestWord.score = NO_SCORE_INFO;
+      map.put(suggestion, suggestWord);
     }
   }
 
@@ -73,29 +80,28 @@ public class SpellingResult {
    * Suggestions must be added with the best suggestion first. ORDER is important.
    *
    * @param token The {@link SpellCheckToken}
-   * @param suggestion The suggestion for the token
-   * @param docFreq The document frequency
+   * @param suggestion The suggestion for the Token as a {@link SuggestWord} instance
    */
-  public void add(SpellCheckToken token, String suggestion, int docFreq) {
-    LinkedHashMap<String, Integer> map = this.suggestions.get(token);
+  public void add(SpellCheckToken token, SuggestWord suggestion) {
+    LinkedHashMap<String, SuggestWord> map = this.suggestions.get(token);
     // Don't bother adding if we already have this token
     if (map == null) {
       map = new LinkedHashMap<>();
       this.suggestions.put(token, map);
     }
-    map.put(suggestion, docFreq);
+    map.put(suggestion.string, suggestion);
   }
 
   /**
    * Gets the suggestions for the given token.
    *
    * @param token The {@link SpellCheckToken} to look up
-   * @return A LinkedHashMap of the suggestions. Key is the suggestion, value is the token frequency
-   *     in the index, else {@link #NO_FREQUENCY_INFO}.
+   * @return A LinkedHashMap of the suggestions. Key is the suggestion, value is the {@link
+   *     SuggestWord}
    *     <p>The suggestions are added in sorted order (i.e. best suggestion first) then the iterator
    *     will return the suggestions in order
    */
-  public LinkedHashMap<String, Integer> get(SpellCheckToken token) {
+  public LinkedHashMap<String, SuggestWord> get(SpellCheckToken token) {
     return suggestions.get(token);
   }
 
@@ -116,11 +122,10 @@ public class SpellingResult {
   /**
    * All the suggestions. The ordering of the inner LinkedHashMap is by best suggestion first.
    *
-   * @return The Map of suggestions for each token. Key is the token, value is a LinkedHashMap whose
-   *     key is the Suggestion and the value is the frequency or {@link #NO_FREQUENCY_INFO} if
-   *     frequency info is not available.
+   * @return The Map of suggestions for each Token. Key is the token, value is a LinkedHashMap whose
+   *     key is the Suggestion and the value is the {@link SuggestWord} instance.
    */
-  public Map<SpellCheckToken, LinkedHashMap<String, Integer>> getSuggestions() {
+  public Map<SpellCheckToken, LinkedHashMap<String, SuggestWord>> getSuggestions() {
     return suggestions;
   }
 

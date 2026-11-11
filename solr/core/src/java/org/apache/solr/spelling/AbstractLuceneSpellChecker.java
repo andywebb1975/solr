@@ -190,7 +190,16 @@ public abstract class AbstractLuceneSpellChecker extends SolrSpellChecker {
         if (countLimit > 0) {
           for (int i = 0; i < countLimit; i++) {
             term = new Term(field, suggestions[i]);
-            result.add(token, suggestions[i], reader.docFreq(term));
+            SuggestWord suggestWord = new SuggestWord();
+            suggestWord.string = suggestions[i];
+            suggestWord.freq = reader.docFreq(term);
+            // NB score is (re)computed so it can be displayed by extendedResults and
+            // for consistency between distributed and non-distributed queries - see
+            // SolrSpellChecker.mergeSuggestions. If future enhancements make use of
+            // the score during collation etc it'll need to be set when extendedResults
+            // is not enabled too.
+            suggestWord.score = sd.getDistance(tokenText, suggestWord.string);
+            result.add(token, suggestWord);
           }
         } else {
           List<String> suggList = List.of();

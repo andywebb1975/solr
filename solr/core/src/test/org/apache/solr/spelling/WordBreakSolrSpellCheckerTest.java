@@ -19,6 +19,7 @@ package org.apache.solr.spelling;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import org.apache.lucene.search.spell.SuggestWord;
 import org.apache.lucene.tests.analysis.MockAnalyzer;
 import org.apache.lucene.tests.util.LuceneTestCase.SuppressTempFileChecks;
 import org.apache.solr.SolrTestCaseJ4;
@@ -90,7 +91,7 @@ public class WordBreakSolrSpellCheckerTest extends SolrTestCaseJ4 {
     assertTrue(result != null && result.getSuggestions() != null);
     assertEquals(9, result.getSuggestions().size());
 
-    for (Map.Entry<SpellCheckToken, LinkedHashMap<String, Integer>> s :
+    for (Map.Entry<SpellCheckToken, LinkedHashMap<String, SuggestWord>> s :
         result.getSuggestions().entrySet()) {
       SpellCheckToken orig = s.getKey();
       String[] corr = s.getValue().keySet().toArray(new String[0]);

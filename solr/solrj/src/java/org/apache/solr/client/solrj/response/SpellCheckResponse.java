@@ -138,6 +138,7 @@ public class SpellCheckResponse {
     private int originalFrequency;
     private List<String> alternatives = new ArrayList<>();
     private List<Integer> alternativeFrequencies;
+    private List<Float> alternativeScores;
 
     public Suggestion(String token, NamedList<Object> suggestion) {
       this.token = token;
@@ -155,9 +156,19 @@ public class SpellCheckResponse {
                   @SuppressWarnings("unchecked")
                   List<NamedList<?>> extended = (List<NamedList<?>>) list;
                   alternativeFrequencies = new ArrayList<>();
+                  alternativeScores = new ArrayList<>();
                   for (NamedList<?> nl : extended) {
-                    alternatives.add((String) nl.get("word"));
-                    alternativeFrequencies.add(((Number) nl.get("freq")).intValue());
+                    for (Map.Entry<String, ?> entry : nl) {
+                      String key = entry.getKey();
+                      if ("word".equals(key) && entry.getValue() != null) {
+                        alternatives.add((String) entry.getValue());
+                      } else if ("freq".equals(key) && entry.getValue() != null) {
+                        alternativeFrequencies.add(((Number) entry.getValue()).intValue());
+                      } else if ("score".equals(key) && entry.getValue() != null) {
+                        // this only exists for Solr 10.2.0 or later
+                        alternativeScores.add(((Number) entry.getValue()).floatValue());
+                      }
+                    }
                   }
                 } else {
                   @SuppressWarnings("unchecked")
@@ -200,6 +211,14 @@ public class SpellCheckResponse {
      */
     public List<Integer> getAlternativeFrequencies() {
       return alternativeFrequencies;
+    }
+
+    /**
+     * The distance scores of the alternatives in the corpus, or null if this information was not
+     * returned. This requires Solr 10.2.0 or later.
+     */
+    public List<Float> getAlternativeScores() {
+      return alternativeScores;
     }
   }
 

@@ -219,6 +219,7 @@ public class DirectSolrSpellChecker extends SolrSpellChecker {
           SuggestWord orig = new SuggestWord();
           orig.freq = freq;
           orig.string = tokenText;
+          orig.score = 1f;
           suggestionsWithOrig[0] = orig;
           suggestions = suggestionsWithOrig;
         }
@@ -228,7 +229,7 @@ public class DirectSolrSpellChecker extends SolrSpellChecker {
         result.add(token, empty);
       } else {
         for (SuggestWord suggestion : suggestions) {
-          result.add(token, suggestion.string, suggestion.freq);
+          result.add(token, suggestion);
         }
       }
     }

@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
+import org.apache.lucene.search.spell.SuggestWord;
 import org.apache.lucene.tests.util.LuceneTestCase.SuppressTempFileChecks;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.common.params.SpellingParams;
@@ -77,14 +78,14 @@ public class DirectSolrSpellCheckerTest extends SolrTestCaseJ4 {
               SpellingOptions spellOpts = new SpellingOptions(tokens, searcher.getIndexReader());
               SpellingResult result = checker.getSuggestions(spellOpts);
               assertNotNull("result shouldn't be null", result);
-              Map<String, Integer> suggestions = result.get(spellOpts.tokens.get(0));
+              Map<String, SuggestWord> suggestions = result.get(spellOpts.tokens.get(0));
               assertFalse("suggestions shouldn't be empty", suggestions.isEmpty());
-              Map.Entry<String, Integer> entry = suggestions.entrySet().iterator().next();
+              Map.Entry<String, SuggestWord> entry = suggestions.entrySet().iterator().next();
               assertEquals("foo", entry.getKey());
               assertNotEquals(
                   entry.getValue() + " equals: " + SpellingResult.NO_FREQUENCY_INFO,
                   SpellingResult.NO_FREQUENCY_INFO,
-                  (int) entry.getValue());
+                  entry.getValue().freq);
 
               // check that 'super' is *not* corrected
               spellOpts.tokens = SpellCheckToken.drain(queryConverter.convert("super"));
@@ -154,14 +155,14 @@ public class DirectSolrSpellCheckerTest extends SolrTestCaseJ4 {
               SpellingOptions spellOpts = new SpellingOptions(tokens, searcher.getIndexReader());
               SpellingResult result = checker.getSuggestions(spellOpts);
               assertNotNull("result shouldn't be null", result);
-              Map<String, Integer> suggestions = result.get(spellOpts.tokens.get(0));
+              Map<String, SuggestWord> suggestions = result.get(spellOpts.tokens.get(0));
               assertNotNull("suggestions shouldn't be null", suggestions);
 
               if (limitQueryLength) {
                 assertTrue("suggestions should be empty", suggestions.isEmpty());
               } else {
                 assertFalse("suggestions shouldn't be empty", suggestions.isEmpty());
-                Map.Entry<String, Integer> entry = suggestions.entrySet().iterator().next();
+                Map.Entry<String, SuggestWord> entry = suggestions.entrySet().iterator().next();
                 assertEquals("another", entry.getKey());
               }
 

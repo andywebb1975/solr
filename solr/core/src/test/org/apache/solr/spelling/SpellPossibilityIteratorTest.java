@@ -20,6 +20,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import org.apache.lucene.search.spell.SuggestWord;
 import org.apache.solr.SolrTestCaseJ4;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,10 +31,10 @@ public class SpellPossibilityIteratorTest extends SolrTestCaseJ4 {
   private static final SpellCheckToken TOKEN_AYE_BEE = new SpellCheckToken("AYE BEE", 0, 7);
   private static final SpellCheckToken TOKEN_CEE = new SpellCheckToken("CEE", 8, 11);
 
-  private LinkedHashMap<String, Integer> AYE;
-  private LinkedHashMap<String, Integer> BEE;
-  private LinkedHashMap<String, Integer> AYE_BEE;
-  private LinkedHashMap<String, Integer> CEE;
+  private LinkedHashMap<String, SuggestWord> AYE;
+  private LinkedHashMap<String, SuggestWord> BEE;
+  private LinkedHashMap<String, SuggestWord> AYE_BEE;
+  private LinkedHashMap<String, SuggestWord> CEE;
 
   @Override
   @Before
@@ -41,53 +42,54 @@ public class SpellPossibilityIteratorTest extends SolrTestCaseJ4 {
     super.setUp();
 
     AYE = new LinkedHashMap<>();
-    AYE.put("I", 0);
-    AYE.put("II", 0);
-    AYE.put("III", 0);
-    AYE.put("IV", 0);
-    AYE.put("V", 0);
-    AYE.put("VI", 0);
-    AYE.put("VII", 0);
-    AYE.put("VIII", 0);
+    AYE.put("I", new SuggestWord());
+    AYE.put("II", new SuggestWord());
+    AYE.put("III", new SuggestWord());
+    AYE.put("IV", new SuggestWord());
+    AYE.put("V", new SuggestWord());
+    AYE.put("VI", new SuggestWord());
+    AYE.put("VII", new SuggestWord());
+    AYE.put("VIII", new SuggestWord());
 
     BEE = new LinkedHashMap<>();
-    BEE.put("alpha", 0);
-    BEE.put("beta", 0);
-    BEE.put("gamma", 0);
-    BEE.put("delta", 0);
-    BEE.put("epsilon", 0);
-    BEE.put("zeta", 0);
-    BEE.put("eta", 0);
-    BEE.put("theta", 0);
-    BEE.put("iota", 0);
+    BEE.put("alpha", new SuggestWord());
+    BEE.put("beta", new SuggestWord());
+    BEE.put("gamma", new SuggestWord());
+    BEE.put("delta", new SuggestWord());
+    BEE.put("epsilon", new SuggestWord());
+    BEE.put("zeta", new SuggestWord());
+    BEE.put("eta", new SuggestWord());
+    BEE.put("theta", new SuggestWord());
+    BEE.put("iota", new SuggestWord());
 
     AYE_BEE = new LinkedHashMap<>();
-    AYE_BEE.put("one-alpha", 0);
-    AYE_BEE.put("two-beta", 0);
-    AYE_BEE.put("three-gamma", 0);
-    AYE_BEE.put("four-delta", 0);
-    AYE_BEE.put("five-epsilon", 0);
-    AYE_BEE.put("six-zeta", 0);
-    AYE_BEE.put("seven-eta", 0);
-    AYE_BEE.put("eight-theta", 0);
-    AYE_BEE.put("nine-iota", 0);
+    AYE_BEE.put("one-alpha", new SuggestWord());
+    AYE_BEE.put("two-beta", new SuggestWord());
+    AYE_BEE.put("three-gamma", new SuggestWord());
+    AYE_BEE.put("four-delta", new SuggestWord());
+    AYE_BEE.put("five-epsilon", new SuggestWord());
+    AYE_BEE.put("six-zeta", new SuggestWord());
+    AYE_BEE.put("seven-eta", new SuggestWord());
+    AYE_BEE.put("eight-theta", new SuggestWord());
+    AYE_BEE.put("nine-iota", new SuggestWord());
 
     CEE = new LinkedHashMap<>();
-    CEE.put("one", 0);
-    CEE.put("two", 0);
-    CEE.put("three", 0);
-    CEE.put("four", 0);
-    CEE.put("five", 0);
-    CEE.put("six", 0);
-    CEE.put("seven", 0);
-    CEE.put("eight", 0);
-    CEE.put("nine", 0);
-    CEE.put("ten", 0);
+    CEE.put("one", new SuggestWord());
+    CEE.put("two", new SuggestWord());
+    CEE.put("three", new SuggestWord());
+    CEE.put("four", new SuggestWord());
+    CEE.put("five", new SuggestWord());
+    CEE.put("six", new SuggestWord());
+    CEE.put("seven", new SuggestWord());
+    CEE.put("eight", new SuggestWord());
+    CEE.put("nine", new SuggestWord());
+    CEE.put("ten", new SuggestWord());
   }
 
   @Test
   public void testScalability() {
-    Map<SpellCheckToken, LinkedHashMap<String, Integer>> lotsaSuggestions = new LinkedHashMap<>();
+    Map<SpellCheckToken, LinkedHashMap<String, SuggestWord>> lotsaSuggestions =
+        new LinkedHashMap<>();
     lotsaSuggestions.put(TOKEN_AYE, AYE);
     lotsaSuggestions.put(TOKEN_BEE, BEE);
     lotsaSuggestions.put(TOKEN_CEE, CEE);
@@ -131,7 +133,7 @@ public class SpellPossibilityIteratorTest extends SolrTestCaseJ4 {
 
   @Test
   public void testSpellPossibilityIterator() {
-    Map<SpellCheckToken, LinkedHashMap<String, Integer>> suggestions = new LinkedHashMap<>();
+    Map<SpellCheckToken, LinkedHashMap<String, SuggestWord>> suggestions = new LinkedHashMap<>();
     suggestions.put(TOKEN_AYE, AYE);
     suggestions.put(TOKEN_BEE, BEE);
     suggestions.put(TOKEN_CEE, CEE);
@@ -184,7 +186,7 @@ public class SpellPossibilityIteratorTest extends SolrTestCaseJ4 {
 
   @Test
   public void testOverlappingTokens() {
-    Map<SpellCheckToken, LinkedHashMap<String, Integer>> overlappingSuggestions =
+    Map<SpellCheckToken, LinkedHashMap<String, SuggestWord>> overlappingSuggestions =
         new LinkedHashMap<>();
     overlappingSuggestions.put(TOKEN_AYE, AYE);
     overlappingSuggestions.put(TOKEN_BEE, BEE);

@@ -144,10 +144,10 @@ public abstract class SolrSpellChecker {
       if (extendedResults) {
         Integer o = mergeData.origVsFreq.get(original);
         if (o != null) result.addFrequency(token, o);
-        for (SuggestWord word : suggestions) result.add(token, word.string, word.freq);
+        for (SuggestWord suggestWord : suggestions) result.add(token, suggestWord);
       } else {
         List<String> words = new ArrayList<>(sugQueue.size());
-        for (SuggestWord word : suggestions) words.add(word.string);
+        for (SuggestWord suggestWord : suggestions) words.add(suggestWord.string);
         result.add(token, words);
       }
     }

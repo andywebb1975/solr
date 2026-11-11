@@ -631,16 +631,16 @@ public class SpellCheckComponent extends SearchComponent implements SolrCoreAwar
       String origQuery,
       boolean extendedResults) {
     NamedList<Object> result = new NamedList<>();
-    Map<SpellCheckToken, LinkedHashMap<String, Integer>> suggestions =
+    Map<SpellCheckToken, LinkedHashMap<String, SuggestWord>> suggestions =
         spellingResult.getSuggestions();
     boolean hasFreqInfo = spellingResult.hasTokenFrequencyInfo();
     boolean hasSuggestions = false;
     boolean hasZeroFrequencyToken = false;
-    for (Map.Entry<SpellCheckToken, LinkedHashMap<String, Integer>> entry :
+    for (Map.Entry<SpellCheckToken, LinkedHashMap<String, SuggestWord>> entry :
         suggestions.entrySet()) {
       SpellCheckToken inputToken = entry.getKey();
       String tokenString = inputToken.text();
-      Map<String, Integer> theSuggestions = new LinkedHashMap<>(entry.getValue());
+      Map<String, SuggestWord> theSuggestions = new LinkedHashMap<>(entry.getValue());
       theSuggestions.keySet().removeIf(sug -> sug.equals(tokenString));
       if (theSuggestions.size() > 0) {
         hasSuggestions = true;
@@ -656,18 +656,19 @@ public class SpellCheckComponent extends SearchComponent implements SolrCoreAwar
         //
         // Logical structure of the extended results:
         // "suggestion":[
-        // {"word":"alt1","freq":7},
-        // {"word":"alt2","freq":4}
+        // {"word":"alt1","freq":7,"score":0.75},
+        // {"word":"alt2","freq":4,"score":0.75}
         // ]
         if (extendedResults && hasFreqInfo) {
           suggestionList.add("origFreq", spellingResult.getTokenFrequency(inputToken));
 
           ArrayList<SimpleOrderedMap<Object>> sugs = new ArrayList<>();
           suggestionList.add("suggestion", sugs);
-          for (Map.Entry<String, Integer> suggEntry : theSuggestions.entrySet()) {
+          for (Map.Entry<String, SuggestWord> suggEntry : theSuggestions.entrySet()) {
             SimpleOrderedMap<Object> sugEntry = new SimpleOrderedMap<>();
             sugEntry.add("word", suggEntry.getKey());
-            sugEntry.add("freq", suggEntry.getValue());
+            sugEntry.add("freq", suggEntry.getValue().freq);
+            sugEntry.add("score", suggEntry.getValue().score);
             sugs.add(sugEntry);
           }
         } else {
