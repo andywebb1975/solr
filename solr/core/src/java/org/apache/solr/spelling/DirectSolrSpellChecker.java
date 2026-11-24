@@ -210,6 +210,13 @@ public class DirectSolrSpellChecker extends SolrSpellChecker {
       if (options.alternativeTermCount > 0 && freq > 0) {
         boolean foundOriginal = false;
         SuggestWord[] suggestionsWithOrig = new SuggestWord[suggestions.length + 1];
+
+        // suggestionsWithOrig may replace suggestions; if it does it'll have original
+        // text as entry 0, others are shifted up by 1.
+
+        // If the original text is already in suggestions, then suggestions isn't replaced
+        // and suggestionsWithOrig is not used.
+
         for (int i = 0; i < suggestions.length; i++) {
           if (suggestions[i].string.equals(tokenText)) {
             foundOriginal = true;
@@ -221,6 +228,8 @@ public class DirectSolrSpellChecker extends SolrSpellChecker {
           SuggestWord orig = new SuggestWord();
           orig.freq = freq;
           orig.string = tokenText;
+          // token won't be reported by SpellCheckComponent anyway as it has same text as original
+          // orig.score = 1.0f; // original is same as this suggestion
           suggestionsWithOrig[0] = orig;
           suggestions = suggestionsWithOrig;
         }
@@ -230,7 +239,8 @@ public class DirectSolrSpellChecker extends SolrSpellChecker {
         result.add(token, empty);
       } else {
         for (SuggestWord suggestion : suggestions) {
-          result.add(token, suggestion.string, suggestion.freq);
+          log.debug("token: {}, suggestion: {}", token.toString(), suggestion.toString());
+          result.add(token, suggestion);
         }
       }
     }
@@ -256,7 +266,7 @@ public class DirectSolrSpellChecker extends SolrSpellChecker {
         if (1.0F <= checker.getMaxQueryFrequency()) {
           // absolute maxQueryFreq threshold
           if (checker.getMaxQueryFrequency() < mergeData.origVsFreq.get(original)) {
-            // one or more shards thought the word needed suggestions because it's
+            // one or more shards thought the word needed suggestions because its
             // (per-shard) origFreq was too low, but the aggregate sum of origFreq
             // is above our threshold, so ignore those suggestions.
             mergeData.removeOriginal(original);
@@ -267,10 +277,10 @@ public class DirectSolrSpellChecker extends SolrSpellChecker {
           // This situation is also problematic, but in the reverse situation of
           // the absolute maxQueryFreq threshold.
           //
-          // An individual shard may have found that it's (per-shard) origFreq
+          // An individual shard may have found that its (per-shard) origFreq
           // was higher then the computed max for that shard (relative to the
           // per-shard maxDoc) and said it's "correctlySpelled" even though
-          // it's cumulative origFreq may not meet the computed max across the
+          // its cumulative origFreq may not meet the computed max across the
           // entire collection.
           //
           // But we don't have a straightforward way to determine that, so for
