@@ -59,9 +59,13 @@ public class SpellCheckCollation implements Comparable<SpellCheckCollation> {
     this.hits = hits;
   }
 
-  public float getMaxScore() { return maxScore; }
+  public float getMaxScore() {
+    return maxScore;
+  }
 
-  public void setMaxScore(float maxScore) { this.maxScore = maxScore; }
+  public void setMaxScore(float maxScore) {
+    this.maxScore = maxScore;
+  }
 
   public String getCollationQuery() {
     return collationQuery;

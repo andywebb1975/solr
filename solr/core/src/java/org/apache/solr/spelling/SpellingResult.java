@@ -20,7 +20,6 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.apache.lucene.search.spell.SuggestWord;
 
 /**
@@ -102,7 +101,8 @@ public class SpellingResult {
    * Gets the suggestions for the given token.
    *
    * @param token The {@link Token} to look up
-   * @return A LinkedHashMap of the suggestions. Key is the suggestion, value is the {@link SuggestWord}
+   * @return A LinkedHashMap of the suggestions. Key is the suggestion, value is the {@link
+   *     SuggestWord}
    *     <p>The suggestions are added in sorted order (i.e. best suggestion first) then the iterator
    *     will return the suggestions in order
    */
@@ -128,7 +128,7 @@ public class SpellingResult {
    * All the suggestions. The ordering of the inner LinkedHashMap is by best suggestion first.
    *
    * @return The Map of suggestions for each Token. Key is the token, value is a LinkedHashMap whose
-     *     key is the Suggestion and the value is the {@link SuggestWord} instance.
+   *     key is the Suggestion and the value is the {@link SuggestWord} instance.
    */
   public Map<Token, LinkedHashMap<String, SuggestWord>> getSuggestions() {
     return suggestions;

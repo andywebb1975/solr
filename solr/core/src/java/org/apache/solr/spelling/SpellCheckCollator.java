@@ -97,7 +97,8 @@ public class SpellCheckCollator {
             maxCollationEvaluations,
             suggestionsMayOverlap);
 
-    // this loop will terminate when we have either tried enough possibilities or have enough collations
+    // this loop will terminate when we have either tried enough possibilities or have enough
+    // collations
     while (tryNo < maxTries && collNo < maxCollations && possibilityIter.hasNext()) {
 
       if (queryLimits.maybeExitWithPartialResults("SpellCheck collator")) {
@@ -196,7 +197,8 @@ public class SpellCheckCollator {
       }
 
       if (hits > 0 || !verifyCandidateWithQuery || getAllCollations) {
-        // when getAllCollations is set collNo may be lower than the actual number of collations returned, but we still need to honour maxCollations
+        // when getAllCollations is set collNo may be lower than the actual number of collations
+        // returned, but we still need to honour maxCollations
         if (hits > 0 || !verifyCandidateWithQuery) collNo++;
         SpellCheckCollation collation = new SpellCheckCollation();
         collation.setCollationQuery(collationQueryStr);

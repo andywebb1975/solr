@@ -309,7 +309,8 @@ public class SpellCheckComponent extends SearchComponent implements SolrCoreAwar
     int maxCollationCollectDocs = params.getInt(SPELLCHECK_COLLATE_MAX_COLLECT_DOCS, 0);
     boolean collationGetMaxScore = params.getBool(SPELLCHECK_COLLATE_GET_MAXSCORE, false);
     String collationSortMaxScore = params.get(SPELLCHECK_COLLATE_SORT_MAXSCORE);
-    boolean collationGetAllCollations = params.getBool(SPELLCHECK_COLLATE_GET_ALL_COLLATIONS, false);
+    boolean collationGetAllCollations =
+        params.getBool(SPELLCHECK_COLLATE_GET_ALL_COLLATIONS, false);
     // If not reporting hits counts, don't bother collecting more than 1 document per try.
     if (!collationExtendedResults) {
       maxCollationCollectDocs = 1;

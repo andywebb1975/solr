@@ -140,7 +140,8 @@ public class ConjunctionSolrSpellChecker extends SolrSpellChecker {
       }
       for (Map.Entry<Token, LinkedHashMap<String, SuggestWord>> entry :
           result.getSuggestions().entrySet()) {
-        List<LinkedHashMap<String, SuggestWord>> allForThisToken = allSuggestions.get(entry.getKey());
+        List<LinkedHashMap<String, SuggestWord>> allForThisToken =
+            allSuggestions.get(entry.getKey());
         if (allForThisToken == null) {
           allForThisToken = new ArrayList<>();
           allSuggestions.put(entry.getKey(), allForThisToken);
@@ -149,7 +150,8 @@ public class ConjunctionSolrSpellChecker extends SolrSpellChecker {
       }
     }
     SpellingResult combinedResult = new SpellingResult();
-    for (Map.Entry<Token, List<LinkedHashMap<String, SuggestWord>>> entry : allSuggestions.entrySet()) {
+    for (Map.Entry<Token, List<LinkedHashMap<String, SuggestWord>>> entry :
+        allSuggestions.entrySet()) {
       Token original = entry.getKey();
       List<Iterator<Map.Entry<String, SuggestWord>>> corrIters =
           new ArrayList<>(entry.getValue().size());
