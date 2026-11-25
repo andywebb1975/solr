@@ -88,8 +88,7 @@ public class SpellPossibilityIteratorTest extends SolrTestCaseJ4 {
 
   @Test
   public void testScalability() {
-    Map<Token, LinkedHashMap<String, SuggestWord>> lotsaSuggestions =
-        new LinkedHashMap<>();
+    Map<Token, LinkedHashMap<String, SuggestWord>> lotsaSuggestions = new LinkedHashMap<>();
     lotsaSuggestions.put(TOKEN_AYE, AYE);
     lotsaSuggestions.put(TOKEN_BEE, BEE);
     lotsaSuggestions.put(TOKEN_CEE, CEE);
@@ -186,8 +185,7 @@ public class SpellPossibilityIteratorTest extends SolrTestCaseJ4 {
 
   @Test
   public void testOverlappingTokens() {
-    Map<Token, LinkedHashMap<String, SuggestWord>> overlappingSuggestions =
-        new LinkedHashMap<>();
+    Map<Token, LinkedHashMap<String, SuggestWord>> overlappingSuggestions = new LinkedHashMap<>();
     overlappingSuggestions.put(TOKEN_AYE, AYE);
     overlappingSuggestions.put(TOKEN_BEE, BEE);
     overlappingSuggestions.put(TOKEN_AYE_BEE, AYE_BEE);

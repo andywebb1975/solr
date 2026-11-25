@@ -61,8 +61,7 @@ public class PossibilityIterator implements Iterator<PossibilityIterator.RankedS
       int maxEvaluations,
       boolean overlap) {
     this.suggestionsMayOverlap = overlap;
-    for (Map.Entry<Token, LinkedHashMap<String, SuggestWord>> entry :
-        suggestions.entrySet()) {
+    for (Map.Entry<Token, LinkedHashMap<String, SuggestWord>> entry : suggestions.entrySet()) {
       Token token = entry.getKey();
       if (entry.getValue().size() == 0) {
         continue;

@@ -19,8 +19,6 @@ package org.apache.solr.spelling;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.search.spell.SuggestWord;
 import org.apache.lucene.tests.util.LuceneTestCase.SuppressTempFileChecks;
 import org.apache.solr.SolrTestCaseJ4;

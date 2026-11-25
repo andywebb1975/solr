@@ -35,8 +35,7 @@ public class SpellingResult {
    * Key == token Value = Map -> key is the suggestion, value is the frequency of the token in the
    * collection
    */
-  private Map<Token, LinkedHashMap<String, SuggestWord>> suggestions =
-      new LinkedHashMap<>();
+  private Map<Token, LinkedHashMap<String, SuggestWord>> suggestions = new LinkedHashMap<>();
 
   private Map<Token, Integer> tokenFrequencies;
   public static final int NO_FREQUENCY_INFO = -1;

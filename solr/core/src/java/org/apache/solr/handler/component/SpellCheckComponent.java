@@ -658,13 +658,11 @@ public class SpellCheckComponent extends SearchComponent implements SolrCoreAwar
       String origQuery,
       boolean extendedResults) {
     NamedList<Object> result = new NamedList<>();
-    Map<Token, LinkedHashMap<String, SuggestWord>> suggestions =
-        spellingResult.getSuggestions();
+    Map<Token, LinkedHashMap<String, SuggestWord>> suggestions = spellingResult.getSuggestions();
     boolean hasFreqInfo = spellingResult.hasTokenFrequencyInfo();
     boolean hasSuggestions = false;
     boolean hasZeroFrequencyToken = false;
-    for (Map.Entry<Token, LinkedHashMap<String, SuggestWord>> entry :
-        suggestions.entrySet()) {
+    for (Map.Entry<Token, LinkedHashMap<String, SuggestWord>> entry : suggestions.entrySet()) {
       Token inputToken = entry.getKey();
       String tokenString = new String(inputToken.buffer(), 0, inputToken.length());
       Map<String, SuggestWord> theSuggestions = new LinkedHashMap<>(entry.getValue());

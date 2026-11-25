@@ -90,7 +90,8 @@ public class WordBreakSolrSpellCheckerTest extends SolrTestCaseJ4 {
     assertTrue(result != null && result.getSuggestions() != null);
     assertEquals(9, result.getSuggestions().size());
 
-    for (Map.Entry<Token, LinkedHashMap<String, SuggestWord>> s : result.getSuggestions().entrySet()) {
+    for (Map.Entry<Token, LinkedHashMap<String, SuggestWord>> s :
+        result.getSuggestions().entrySet()) {
       Token orig = s.getKey();
       String[] corr = s.getValue().keySet().toArray(new String[0]);
       if (orig.toString().equals("paintable")) {

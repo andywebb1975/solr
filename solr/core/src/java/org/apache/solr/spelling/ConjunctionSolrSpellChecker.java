@@ -133,8 +133,7 @@ public class ConjunctionSolrSpellChecker extends SolrSpellChecker {
   // checker its own weight and use that in combination to score & frequency to sort the results ?
   private SpellingResult mergeCheckers(SpellingResult[] results, int numSug) {
     Map<Token, Integer> combinedTokenFrequency = new HashMap<>();
-    Map<Token, List<LinkedHashMap<String, SuggestWord>>> allSuggestions =
-        new LinkedHashMap<>();
+    Map<Token, List<LinkedHashMap<String, SuggestWord>>> allSuggestions = new LinkedHashMap<>();
     for (SpellingResult result : results) {
       if (result.getTokenFrequencies() != null) {
         combinedTokenFrequency.putAll(result.getTokenFrequencies());
